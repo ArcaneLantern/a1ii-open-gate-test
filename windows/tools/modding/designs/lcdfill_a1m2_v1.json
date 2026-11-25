@@ -1,0 +1,179 @@
+{
+ "design": "lcdfill_a1m2_v1",
+ "build": "a1m2_400",
+ "title": "Rear screen (LCD) at 3:2 in movie mode with the focus frames: VDF fills the 3:2 panel with the 16:9 live view, and the frame widgets expect the live view there (A1 II 4.00 port)",
+ "kind": "ram_words",
+ "artifact": "cpapp-b.bin, its loaded image in coprocessor RAM: the word is in the file, the change is made in RAM only",
+ "artifact_sha256": "96b41427958c1b412b3e15c5bd9b51e34657ae1e1246344438b8368031ca4859",
+ "generated_by": "build/build_lcd_a1m2.py",
+ "ported_from": {
+  "design": "lcdfill_v2",
+  "build": "a7iv_602",
+  "also": "lcdfill_c2_v2 (a7c2_201)"
+ },
+ "table": "VDF fit-mode table 0x1e4bc8 and the frame widgets' rectangle tables 0xd7b560, 0xd7b5d8, 0xd7b650 (entry: rear panel, 16:9) [A7 IV addresses; A1 II: fit function 0x1fac50, fit table 0x1faca0, frame tables 0xf823c4, 0xf8243c, 0xf824b4]",
+ "summary": {
+  "sites": 7,
+  "bytes": 28,
+  "panel": "rear LCD, 3:2 (panel code 1)",
+  "picture": "16:9 live view (picture code 2)",
+  "fit_stock": "letterbox (3)",
+  "fit_new": "fill (0)",
+  "frame_rectangle_stock": [
+   0,
+   38,
+   640,
+   404
+  ],
+  "frame_rectangle_new": [
+   0,
+   0,
+   640,
+   480
+  ],
+  "goes_with": [
+   "the open-gate state (a 16:9 live view holding the whole 3:2 sensor area, squeezed 32/27)",
+   "lcdcycle_a1m2_v1"
+  ]
+ },
+ "sites": [
+  {
+   "ram_address": "0x1faca4",
+   "old": "03000000",
+   "new": "00000000",
+   "note": "VDF fit mode for a 16:9 picture on a 3:2 panel (table for picture code 2, entry for panel code 1): 3 letterbox to 0 fill. The rear screen then shows the squeezed 16:9 live view over the whole 3:2 panel, i.e. stretched x32/27 vertically [A7 IV 0x1e4bcc, A7C II 0x1f8f4c]"
+  },
+  {
+   "ram_address": "0xf82404",
+   "old": "00002600",
+   "new": "00000000",
+   "note": "cpActAfWindow (focus area frames), check 0x128530: expected live-view rectangle for a 16:9 picture on the rear panel, x, y: stock letterbox (0, 38, 640, 404) to the whole panel (0, 0, 640, 480) [A7 IV 0xd7b5a0]"
+  },
+  {
+   "ram_address": "0xf82408",
+   "old": "80029401",
+   "new": "8002e001",
+   "note": "cpActAfWindow (focus area frames), check 0x128530: expected live-view rectangle for a 16:9 picture on the rear panel, w, h: stock letterbox (0, 38, 640, 404) to the whole panel (0, 0, 640, 480) [A7 IV 0xd7b5a4]"
+  },
+  {
+   "ram_address": "0xf8247c",
+   "old": "00002600",
+   "new": "00000000",
+   "note": "cpActAfWindowRemoteSend (the same frames for a remote viewer), check 0x128d50: expected live-view rectangle for a 16:9 picture on the rear panel, x, y: stock letterbox (0, 38, 640, 404) to the whole panel (0, 0, 640, 480) [A7 IV 0xd7b618]"
+  },
+  {
+   "ram_address": "0xf82480",
+   "old": "80029401",
+   "new": "8002e001",
+   "note": "cpActAfWindowRemoteSend (the same frames for a remote viewer), check 0x128d50: expected live-view rectangle for a 16:9 picture on the rear panel, w, h: stock letterbox (0, 38, 640, 404) to the whole panel (0, 0, 640, 480) [A7 IV 0xd7b61c]"
+  },
+  {
+   "ram_address": "0xf824f4",
+   "old": "00002600",
+   "new": "00000000",
+   "note": "cpActTrackingFrame (tracking and face frames), check 0x1297d8: expected live-view rectangle for a 16:9 picture on the rear panel, x, y: stock letterbox (0, 38, 640, 404) to the whole panel (0, 0, 640, 480) [A7 IV 0xd7b690]"
+  },
+  {
+   "ram_address": "0xf824f8",
+   "old": "80029401",
+   "new": "8002e001",
+   "note": "cpActTrackingFrame (tracking and face frames), check 0x1297d8: expected live-view rectangle for a 16:9 picture on the rear panel, w, h: stock letterbox (0, 38, 640, 404) to the whole panel (0, 0, 640, 480) [A7 IV 0xd7b694]"
+  }
+ ],
+ "guards": [
+  {
+   "ram_address": "0x1fac50",
+   "bytes": "02468a4201d1002070470020052918d8",
+   "note": "first 16 bytes of the fit-mode function, as in the file [A7 IV 0x1e4b78]"
+  },
+  {
+   "ram_address": "0x1fac90",
+   "bytes": "022070470020032a38bf0320704700bf",
+   "note": "last 16 bytes of the fit-mode function before its tables, as in the file [A7 IV 0x1e4bb8]"
+  },
+  {
+   "ram_address": "0x1faca0",
+   "bytes": "03000000",
+   "note": "picture code 2 (16:9), panel code 0 (4:3): 3 letterbox (the EVF's entry, left alone) [A7 IV 0x1e4bc8]"
+  },
+  {
+   "ram_address": "0x1faca8",
+   "bytes": "00000000000000000000000002000000",
+   "note": "picture code 2, panel codes 2 to 5: 0, 0, 0, 2 [A7 IV 0x1e4bd0]"
+  },
+  {
+   "ram_address": "0x1facb8",
+   "bytes": "03000000000000000200000000000000",
+   "note": "the table for picture code 1 (3:2), panel codes 0 to 3: 3, 0, 2, 0 [A7 IV 0x1e4be0]"
+  },
+  {
+   "ram_address": "0xf823fc",
+   "bytes": "6b000000aa01e001",
+   "note": "the entry before (1:1 on the rear panel: 107, 0, 426, 480), as in the file [A7 IV 0xd7b598]"
+  },
+  {
+   "ram_address": "0xf8240c",
+   "bytes": "0000320080027c01",
+   "note": "the entry after (fifth aspect on the rear panel: 0, 50, 640, 380), as in the file [A7 IV 0xd7b5a8]"
+  },
+  {
+   "ram_address": "0xf82474",
+   "bytes": "6b000000aa01e001",
+   "note": "the entry before (1:1 on the rear panel: 107, 0, 426, 480), as in the file [A7 IV 0xd7b610]"
+  },
+  {
+   "ram_address": "0xf82484",
+   "bytes": "0000320080027c01",
+   "note": "the entry after (fifth aspect on the rear panel: 0, 50, 640, 380), as in the file [A7 IV 0xd7b620]"
+  },
+  {
+   "ram_address": "0xf824ec",
+   "bytes": "6b000000aa01e001",
+   "note": "the entry before (1:1 on the rear panel: 107, 0, 426, 480), as in the file [A7 IV 0xd7b688]"
+  },
+  {
+   "ram_address": "0xf824fc",
+   "bytes": "0000320080027c01",
+   "note": "the entry after (fifth aspect on the rear panel: 0, 50, 640, 380), as in the file [A7 IV 0xd7b698]"
+  }
+ ],
+ "word_regions": {
+  "FIT": [
+   "0x1faca0",
+   "0x1facb8"
+  ],
+  "FRAMES": [
+   [
+    "0xf823c4",
+    "0xf8243c"
+   ],
+   [
+    "0xf8243c",
+    "0xf824b4"
+   ],
+   [
+    "0xf824b4",
+    "0xf8252c"
+   ]
+  ],
+  "guard_only": [
+   [
+    "0x1fac50",
+    "0x1face4"
+   ]
+  ],
+  "note": "for a helper header in the gen_*_write.py WORD_REGIONS form: sites only inside FIT and FRAMES, guards also in the fit function"
+ },
+ "checked_against": [
+  "cpapp-b.bin 4.00: fit function and tables byte-identical to the A7 IV's (0x1e4b78 -> 0x1fac50), frame tables byte-identical (0xd7b560 -> 0xf823c4), table loads ['0x128644', '0x128e18', '0x12993a'], column map 0xd65140 = 2,1,0,3,0,3,0,4",
+  "emulated: build/emu_lcd_a1m2.py (the A1 II's own fit function, picture-ratio function 0x1faf70 and AF-window check 0x128530)",
+  "NOT read on an A1 II: the rear panel type byte 0x1a1c638 (expected 3 = 3:2, panel code 1) and the EVF's 0x1a1c768"
+ ],
+ "not_checked": [
+  "on a camera: nothing of this design has run on an A1 II",
+  "the rear panel type (expected 3:2 by its 1024 x 682 dot count; a dump should read RAM 0x1a1c638)",
+  "that the open-gate live view of the A1 II port is a 16:9 frame (picture code 2) holding the whole 3:2 area, as on the A7 IV: if the sensor-side design gives a native 3:2 live view instead, this step is not needed (3:2 on a 3:2 panel fills already)",
+  "the remote-send (0x128d50) and tracking (0x1297d8) checks were not emulated (same tables and edits; only 0x128530 was run)",
+  "with the camera's own De-Squeeze Display on, the layout uses its calculator 0x1fae78 instead of the picture-ratio function"
+ ]
+}

@@ -1,0 +1,184 @@
+{
+ "design": "outsz2560_a1m2_v1",
+ "build": "a1m2_400",
+ "camera": "ILCE-1M2 (A1 II), firmware 4.00",
+ "title": "Output size of the stock 4K size class: 3840x2160 to 3840x2560, in the coprocessor's movie size table (RAM) (A1 II 4.00 port)",
+ "kind": "ram_words",
+ "artifact": "cpapp-b.bin, RAM only: these bytes are not in the file",
+ "emulated_image_sha256": "96b41427958c1b412b3e15c5bd9b51e34657ae1e1246344438b8368031ca4859",
+ "generated_by": "build/build_ram_words_a1m2.py",
+ "ported_from": {
+  "design": "outsz2560_v1",
+  "build": "a7iv_602",
+  "also_as": "outsz2560_fx2_v1 (fx2_101), outsz2560_c2_v1 (a7c2_201)"
+ },
+ "status": "addresses from emulating and reading the A1 II's own code; never read or written on an A1 II. The same word change (outsz2560_v1) works on the A7 IV (requests 26 to 29, F688, F698, F700)",
+ "table": "movie size table 0x1938488 (base 0x1938404 + 0x84; 0x501834 fills it; the reader 0x5214fe, case 3, loads base + 0xcc = 0x19384d0)",
+ "summary": {
+  "sites": 1,
+  "bytes": 4,
+  "output_size": [
+   3840,
+   2560
+  ],
+  "picture_bytes_at_format_code_2": 12288000,
+  "stock_output_unit_bytes": 13271040,
+  "goes_with": [
+   "the A1 II sensor-side design",
+   "the A1 II encoder-side design (3840 x 2560)"
+  ]
+ },
+ "emulated": {
+  "function": "0x501834",
+  "bytes": 1042,
+  "base": "0x1938404",
+  "table": "0x1938488",
+  "stores_into_block": 106,
+  "entries_equal_fx2_101": true,
+  "entries": [
+   [
+    1920,
+    1080,
+    "0x296"
+   ],
+   [
+    1440,
+    540,
+    "0x296"
+   ],
+   [
+    8192,
+    4320,
+    "0x49e"
+   ],
+   [
+    8192,
+    4320,
+    "0x43f"
+   ],
+   [
+    7680,
+    4320,
+    "0x49e"
+   ],
+   [
+    7680,
+    4320,
+    "0x43f"
+   ],
+   [
+    4096,
+    2160,
+    "0x43e"
+   ],
+   [
+    4096,
+    2160,
+    "0x2d9"
+   ],
+   [
+    3840,
+    2160,
+    "0x43e"
+   ],
+   [
+    3840,
+    2160,
+    "0x2d9"
+   ],
+   [
+    2048,
+    1080,
+    "0x43e"
+   ],
+   [
+    2048,
+    1080,
+    "0x295"
+   ],
+   [
+    1920,
+    1080,
+    "0x43e"
+   ],
+   [
+    1920,
+    1080,
+    "0x295"
+   ],
+   [
+    1920,
+    1080,
+    "0x43e"
+   ],
+   [
+    1920,
+    1080,
+    "0x4fa"
+   ]
+  ],
+  "reader": {
+   "switch": "0x5214fe",
+   "case_3_code": "0x521546",
+   "case_3_loads": "0x19384d0",
+   "cases_0_to_5_entry_offsets": [
+    "0x18",
+    "0x28",
+    "0x38",
+    "0x48",
+    "0x58",
+    "0x68"
+   ],
+   "fx2_101_switch": "0x51fca6",
+   "fx2_101_case_3_loads": "0x18f60f8",
+   "every_load_of_base_plus_0xcc": [
+    "0x52154e"
+   ]
+  },
+  "output_buffer_id_0x2d9_units": [
+   13271040,
+   13271040,
+   13271040,
+   13271040,
+   13271040,
+   13271040,
+   13271040,
+   13271040,
+   13271040,
+   13271040,
+   13271040
+  ]
+ },
+ "sites": [
+  {
+   "ram_address": "0x19384d0",
+   "old": "000f7008",
+   "new": "000f000a",
+   "note": "the second 3840x2160 entry (output width and height; class 4 of the A1 II's table as the emulator counts it, the A7 IV's class 3) [A7 IV 0x143c7bc, A7C II 0x1a531c8, FX2 0x18f60f8]"
+  }
+ ],
+ "guards": [
+  {
+   "ram_address": "0x19384c8",
+   "bytes": "000f70083e040000",
+   "note": "the entry before: 3840, 2160, memory id 0x43e [A7 IV 0x143c7b4, FX2 0x18f60f0]"
+  },
+  {
+   "ram_address": "0x19384d4",
+   "bytes": "d9020000",
+   "note": "this entry's memory id, 0x2d9 [A7 IV 0x143c7c0, FX2 0x18f60fc]"
+  }
+ ],
+ "precondition": "none of its own: the table is read when a movie request is set up; write it with the camera in stills, as on the A7 IV",
+ "restore": "write the old word back, or cold boot (the set-up fills the table again at start-up)",
+ "checked_against": [
+  "build/emu_size_table.py a1m2_400 (the A1 II's set-up run alone; entries equal the FX2's)",
+  "the tbh switches of the A1 II (0x5214fe) and FX2 (0x51fca6) readers, decoded from the files: cases 0 to 5 pick the same entries",
+  "the A1 II's DmmCfg.bin: id 0x2d9 = 11 x 13,271,040 bytes"
+ ],
+ "not_shown": [
+  "anything on an A1 II",
+  "the A1 II's format code in 4K (2 on the A7 IV camera, request 25; at code 3 a 3840x2560 picture would need 14,745,600 bytes, more than the 13,271,040-byte unit)",
+  "what the settings block 0x19acc14 holds on a camera (the emulation runs the set-up with it zero; the A1 II's head stores 1 where the FX2's stores 0 at 0x501894, before the entries)"
+ ]
+}

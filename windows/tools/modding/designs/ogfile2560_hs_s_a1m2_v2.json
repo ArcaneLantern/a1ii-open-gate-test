@@ -1,0 +1,1558 @@
+{
+ "design": "ogfile2560_hs_s_a1m2_v2",
+ "title": "A 3840 by 2560 file on XAVC HS 4K and on XAVC S 4K at 23.98p and 25p: the union of ogfile2560_hs_v1 and ogfile2560_s_v1; the MP4 headers (tkhd, stsd, Sony's PROF) say 3840x2560",
+ "generated_by": "build/build_ogfile.py --meta",
+ "family": "hs_s",
+ "format": "XAVC HS 4K (HEVC) and XAVC S 4K (AVC)",
+ "raster": [
+  3840,
+  2560
+ ],
+ "rates": [
+  "23.98p",
+  "25p"
+ ],
+ "build": "a1m2_400",
+ "goes_with": "dmmwb4688_v1 + ogsq_v3 (the baseline) and outsz2560_v1 (the output size), all in coprocessor RAM",
+ "artifact_sha256": {
+  "libmpr.so": "a19209d3e40fbfac75cfa14ffe1c6a76772ca73ef045f6c5a96c4ac68431b391",
+  "av-cam.bin": "09d37ff3bfae52cd6da749258762e243594a0f4454da96f52fe9f96c92117e7e"
+ },
+ "summary": {
+  "libmpr.so": {
+   "sites": 6,
+   "bytes": 16,
+   "code_sites": 2
+  },
+  "av-cam.bin": {
+   "sites": 101,
+   "bytes": 284,
+   "code_sites": 0
+  }
+ },
+ "sites_by_kind": {
+  "L1-comb": 4,
+  "A0-unit": 1,
+  "A1-desc": 29,
+  "A2-profile": 70,
+  "A3-clip": 1,
+  "L4-mp4size": 2
+ },
+ "level": "the stock level bytes are kept (HEVC 150/153, AVC 51/52 as the rows have them)",
+ "while_applied": [
+  "the format's other frame rates find no descriptor: their recordings are refused at encoder open (the request says 2,560 rows, their descriptors still say 2,160)",
+  "other formats are not touched",
+  "the MP4 headers (tkhd, stsd, Sony's PROF) say 3840 by 2560 (3:2); Sony's XML in the file still says 3840x2160, 16:9"
+ ],
+ "descriptors": [
+  {
+   "descriptor": 403,
+   "format": "4:2:2 10-bit",
+   "rate": "23.98p",
+   "coding_rate_code": 5,
+   "input_rate": 0,
+   "quality_class": 26,
+   "f0c": 0,
+   "profile_key": 101702,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 150
+  },
+  {
+   "descriptor": 404,
+   "format": "4:2:0 10-bit",
+   "rate": "25p",
+   "coding_rate_code": 3,
+   "input_rate": 0,
+   "quality_class": 26,
+   "f0c": 0,
+   "profile_key": 101901,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 150
+  },
+  {
+   "descriptor": 405,
+   "format": "4:2:0 10-bit",
+   "rate": "23.98p",
+   "coding_rate_code": 5,
+   "input_rate": 0,
+   "quality_class": 26,
+   "f0c": 0,
+   "profile_key": 102000,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 150
+  },
+  {
+   "descriptor": 425,
+   "format": "4:2:2 10-bit",
+   "rate": "25p",
+   "coding_rate_code": 3,
+   "input_rate": 0,
+   "quality_class": 24,
+   "f0c": 0,
+   "profile_key": 101609,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 150
+  },
+  {
+   "descriptor": 477,
+   "format": "4:2:2 10-bit",
+   "rate": "25p",
+   "coding_rate_code": 3,
+   "input_rate": 0,
+   "quality_class": 36,
+   "f0c": 0,
+   "profile_key": 101607,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 150
+  },
+  {
+   "descriptor": 478,
+   "format": "4:2:2 10-bit",
+   "rate": "23.98p",
+   "coding_rate_code": 5,
+   "input_rate": 0,
+   "quality_class": 36,
+   "f0c": 0,
+   "profile_key": 101703,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 150
+  },
+  {
+   "descriptor": 508,
+   "format": "4:2:0 10-bit",
+   "rate": "25p",
+   "coding_rate_code": 3,
+   "input_rate": 0,
+   "quality_class": 41,
+   "f0c": 0,
+   "profile_key": 101907,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 150
+  },
+  {
+   "descriptor": 509,
+   "format": "4:2:0 10-bit",
+   "rate": "23.98p",
+   "coding_rate_code": 5,
+   "input_rate": 0,
+   "quality_class": 41,
+   "f0c": 0,
+   "profile_key": 102003,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 150
+  },
+  {
+   "descriptor": 517,
+   "format": "4:2:0 10-bit",
+   "rate": "25p",
+   "coding_rate_code": 3,
+   "input_rate": 0,
+   "quality_class": 34,
+   "f0c": 0,
+   "profile_key": 101905,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 150
+  },
+  {
+   "descriptor": 518,
+   "format": "4:2:0 10-bit",
+   "rate": "23.98p",
+   "coding_rate_code": 5,
+   "input_rate": 0,
+   "quality_class": 34,
+   "f0c": 0,
+   "profile_key": 102002,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 150
+  },
+  {
+   "descriptor": 534,
+   "format": "4:2:2 10-bit",
+   "rate": "23.98p",
+   "coding_rate_code": 5,
+   "input_rate": 0,
+   "quality_class": 34,
+   "f0c": 0,
+   "profile_key": 101705,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 150
+  },
+  {
+   "descriptor": 560,
+   "format": "4:2:2 10-bit",
+   "rate": "25p",
+   "coding_rate_code": 3,
+   "input_rate": 0,
+   "quality_class": 32,
+   "f0c": 0,
+   "profile_key": 101611,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 150
+  },
+  {
+   "descriptor": 2,
+   "format": "4:2:0 8-bit",
+   "rate": "25p",
+   "coding_rate_code": 3,
+   "input_rate": 0,
+   "quality_class": 26,
+   "f0c": 0,
+   "profile_key": 3,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 51
+  },
+  {
+   "descriptor": 3,
+   "format": "4:2:0 8-bit",
+   "rate": "23.98p",
+   "coding_rate_code": 5,
+   "input_rate": 0,
+   "quality_class": 26,
+   "f0c": 0,
+   "profile_key": 4,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 51
+  },
+  {
+   "descriptor": 5,
+   "format": "4:2:0 8-bit",
+   "rate": "25p",
+   "coding_rate_code": 3,
+   "input_rate": 0,
+   "quality_class": 33,
+   "f0c": 0,
+   "profile_key": 6,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 51
+  },
+  {
+   "descriptor": 6,
+   "format": "4:2:0 8-bit",
+   "rate": "23.98p",
+   "coding_rate_code": 5,
+   "input_rate": 0,
+   "quality_class": 33,
+   "f0c": 0,
+   "profile_key": 7,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 51
+  },
+  {
+   "descriptor": 37,
+   "format": "4:2:2 10-bit",
+   "rate": "25p",
+   "coding_rate_code": 3,
+   "input_rate": 0,
+   "quality_class": 24,
+   "f0c": 0,
+   "profile_key": 102501,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 51
+  },
+  {
+   "descriptor": 38,
+   "format": "4:2:2 10-bit",
+   "rate": "23.98p",
+   "coding_rate_code": 5,
+   "input_rate": 0,
+   "quality_class": 24,
+   "f0c": 0,
+   "profile_key": 102600,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 51
+  },
+  {
+   "descriptor": 40,
+   "format": "4:2:2 10-bit",
+   "rate": "25p",
+   "coding_rate_code": 3,
+   "input_rate": 0,
+   "quality_class": 34,
+   "f0c": 0,
+   "profile_key": 102503,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 51
+  },
+  {
+   "descriptor": 41,
+   "format": "4:2:2 10-bit",
+   "rate": "23.98p",
+   "coding_rate_code": 5,
+   "input_rate": 0,
+   "quality_class": 34,
+   "f0c": 0,
+   "profile_key": 102601,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 51
+  },
+  {
+   "descriptor": 55,
+   "format": "4:2:0 8-bit",
+   "rate": "25p",
+   "coding_rate_code": 3,
+   "input_rate": 0,
+   "quality_class": 34,
+   "f0c": 0,
+   "profile_key": 102909,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 51
+  },
+  {
+   "descriptor": 56,
+   "format": "4:2:0 8-bit",
+   "rate": "23.98p",
+   "coding_rate_code": 5,
+   "input_rate": 0,
+   "quality_class": 34,
+   "f0c": 0,
+   "profile_key": 103004,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 51
+  },
+  {
+   "descriptor": 58,
+   "format": "4:2:0 8-bit",
+   "rate": "25p",
+   "coding_rate_code": 3,
+   "input_rate": 0,
+   "quality_class": 4,
+   "f0c": 0,
+   "profile_key": 102911,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 51
+  },
+  {
+   "descriptor": 59,
+   "format": "4:2:0 8-bit",
+   "rate": "23.98p",
+   "coding_rate_code": 5,
+   "input_rate": 0,
+   "quality_class": 4,
+   "f0c": 0,
+   "profile_key": 103005,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 51
+  },
+  {
+   "descriptor": 72,
+   "format": "4:2:2 10-bit",
+   "rate": "25p",
+   "coding_rate_code": 3,
+   "input_rate": 0,
+   "quality_class": 21,
+   "f0c": 0,
+   "profile_key": 102409,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 51
+  },
+  {
+   "descriptor": 73,
+   "format": "4:2:2 10-bit",
+   "rate": "23.98p",
+   "coding_rate_code": 5,
+   "input_rate": 0,
+   "quality_class": 21,
+   "f0c": 0,
+   "profile_key": 102410,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 51
+  },
+  {
+   "descriptor": 75,
+   "format": "4:2:2 10-bit",
+   "rate": "25p",
+   "coding_rate_code": 3,
+   "input_rate": 0,
+   "quality_class": 39,
+   "f0c": 0,
+   "profile_key": 102603,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 51
+  },
+  {
+   "descriptor": 76,
+   "format": "4:2:2 10-bit",
+   "rate": "23.98p",
+   "coding_rate_code": 5,
+   "input_rate": 0,
+   "quality_class": 39,
+   "f0c": 0,
+   "profile_key": 102604,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 51
+  },
+  {
+   "descriptor": 138,
+   "format": "4:2:2 10-bit",
+   "rate": "23.98p",
+   "coding_rate_code": 5,
+   "input_rate": 0,
+   "quality_class": 26,
+   "f0c": 0,
+   "profile_key": 102607,
+   "pred_mode": 3,
+   "use_core": 0,
+   "level_byte": 51
+  }
+ ],
+ "patches": [
+  {
+   "binary": "libmpr.so",
+   "kind": "L1-comb",
+   "file_off": "0x2d2d26",
+   "va": "0x2d2d26",
+   "old": "7008",
+   "new": "000a",
+   "note": "g_videoParamComb row 5 (HEVC 4:2:0 10-bit): height 2160 -> 2560 (the encoder request's height)",
+   "code": false
+  },
+  {
+   "binary": "libmpr.so",
+   "kind": "L1-comb",
+   "file_off": "0x2d2d56",
+   "va": "0x2d2d56",
+   "old": "7008",
+   "new": "000a",
+   "note": "g_videoParamComb row 7 (HEVC 4:2:2 10-bit): height 2160 -> 2560 (the encoder request's height)",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A0-unit",
+   "file_off": "0x3ab264",
+   "va": "0xffffffc0013ab264",
+   "old": "00000000730400007604000079040000",
+   "new": "8604000074040000770400007a040000",
+   "note": "unit-type table row 3 (above 8,847,360 pixels; the A1 II's 8K class: no CD (id 0, skipped by its memory function 0x22c9e8), LD 0x473, multi buffer 0x476, ES 0x479, which DO have memory on the A1 II but whose ES block is the alternative of the 4K CD 0x486 in one 304.7 MB block, so a single-core 4K channel cannot take them) := row 2 (the 4K class: frame buffer CD 0x486, LD 0x474, multi buffer 0x477, ES buffer 0x47a). While applied, XAVC HS 8K recordings get the 4K blocks too: do not record 8K",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3b9604",
+   "va": "0xffffffc0013b9604",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #403 (4:2:2 10-bit, 23.98p, input rate 0, quality class 26, key 101702): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3dc8ba",
+   "va": "0xffffffc0013dc8ba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 101702: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3dc8ec",
+   "va": "0xffffffc0013dc8ec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 101702: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3dc940",
+   "va": "0xffffffc0013dc940",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 101702: raster height +0x8c -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3b9694",
+   "va": "0xffffffc0013b9694",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #404 (4:2:0 10-bit, 25p, input rate 0, quality class 26, key 101901): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3dc9ba",
+   "va": "0xffffffc0013dc9ba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 101901: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3dc9ec",
+   "va": "0xffffffc0013dc9ec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 101901: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3dca40",
+   "va": "0xffffffc0013dca40",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 101901: raster height +0x8c -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3b9724",
+   "va": "0xffffffc0013b9724",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #405 (4:2:0 10-bit, 23.98p, input rate 0, quality class 26, key 102000): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3dcaba",
+   "va": "0xffffffc0013dcaba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 102000: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3dcaec",
+   "va": "0xffffffc0013dcaec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 102000: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3dcb40",
+   "va": "0xffffffc0013dcb40",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 102000: raster height +0x8c -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3ba264",
+   "va": "0xffffffc0013ba264",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #425 (4:2:2 10-bit, 25p, input rate 0, quality class 24, key 101609): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3ddeba",
+   "va": "0xffffffc0013ddeba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 101609: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3ddeec",
+   "va": "0xffffffc0013ddeec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 101609: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3ddf40",
+   "va": "0xffffffc0013ddf40",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 101609: raster height +0x8c -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3bbfa4",
+   "va": "0xffffffc0013bbfa4",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #477 (4:2:2 10-bit, 25p, input rate 0, quality class 36, key 101607): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e12ba",
+   "va": "0xffffffc0013e12ba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 101607: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e12ec",
+   "va": "0xffffffc0013e12ec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 101607: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e1340",
+   "va": "0xffffffc0013e1340",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 101607: raster height +0x8c -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3bc034",
+   "va": "0xffffffc0013bc034",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #478 (4:2:2 10-bit, 23.98p, input rate 0, quality class 36, key 101703): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e13ba",
+   "va": "0xffffffc0013e13ba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 101703: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e13ec",
+   "va": "0xffffffc0013e13ec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 101703: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e1440",
+   "va": "0xffffffc0013e1440",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 101703: raster height +0x8c -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3bd114",
+   "va": "0xffffffc0013bd114",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #508 (4:2:0 10-bit, 25p, input rate 0, quality class 41, key 101907): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e31ba",
+   "va": "0xffffffc0013e31ba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 101907: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e31ec",
+   "va": "0xffffffc0013e31ec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 101907: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e3240",
+   "va": "0xffffffc0013e3240",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 101907: raster height +0x8c -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3bd1a4",
+   "va": "0xffffffc0013bd1a4",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #509 (4:2:0 10-bit, 23.98p, input rate 0, quality class 41, key 102003): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e32ba",
+   "va": "0xffffffc0013e32ba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 102003: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e32ec",
+   "va": "0xffffffc0013e32ec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 102003: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e3340",
+   "va": "0xffffffc0013e3340",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 102003: raster height +0x8c -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3bd624",
+   "va": "0xffffffc0013bd624",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #517 (4:2:0 10-bit, 25p, input rate 0, quality class 34, key 101905): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e3aba",
+   "va": "0xffffffc0013e3aba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 101905: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e3aec",
+   "va": "0xffffffc0013e3aec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 101905: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e3b40",
+   "va": "0xffffffc0013e3b40",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 101905: raster height +0x8c -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3bd6b4",
+   "va": "0xffffffc0013bd6b4",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #518 (4:2:0 10-bit, 23.98p, input rate 0, quality class 34, key 102002): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e3bba",
+   "va": "0xffffffc0013e3bba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 102002: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e3bec",
+   "va": "0xffffffc0013e3bec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 102002: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e3c40",
+   "va": "0xffffffc0013e3c40",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 102002: raster height +0x8c -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3bdfb4",
+   "va": "0xffffffc0013bdfb4",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #534 (4:2:2 10-bit, 23.98p, input rate 0, quality class 34, key 101705): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e4bba",
+   "va": "0xffffffc0013e4bba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 101705: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e4bec",
+   "va": "0xffffffc0013e4bec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 101705: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e4c40",
+   "va": "0xffffffc0013e4c40",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 101705: raster height +0x8c -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3bee54",
+   "va": "0xffffffc0013bee54",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #560 (4:2:2 10-bit, 25p, input rate 0, quality class 32, key 101611): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e65ba",
+   "va": "0xffffffc0013e65ba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 101611: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e65ec",
+   "va": "0xffffffc0013e65ec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 101611: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3e6640",
+   "va": "0xffffffc0013e6640",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 101611: raster height +0x8c -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A3-clip",
+   "file_off": "0x3a916c",
+   "va": "0xffffffc0013a916c",
+   "old": "00200000e010000003000000",
+   "new": "000f0000000a000017000000",
+   "note": "clip-format row 1 (8192x4320, code 3; unused on this camera) -> 3840x2560, code 23, the code row 5 gives a 3840x2160 recording. Row 5 is left as it is",
+   "code": false
+  },
+  {
+   "binary": "libmpr.so",
+   "kind": "L1-comb",
+   "file_off": "0x2d2cae",
+   "va": "0x2d2cae",
+   "old": "7008",
+   "new": "000a",
+   "note": "g_videoParamComb row 0 (AVC 4:2:0 8-bit): height 2160 -> 2560 (the encoder request's height)",
+   "code": false
+  },
+  {
+   "binary": "libmpr.so",
+   "kind": "L1-comb",
+   "file_off": "0x2d2cde",
+   "va": "0x2d2cde",
+   "old": "7008",
+   "new": "000a",
+   "note": "g_videoParamComb row 2 (AVC 4:2:2 10-bit): height 2160 -> 2560 (the encoder request's height)",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3ab474",
+   "va": "0xffffffc0013ab474",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #2 (4:2:0 8-bit, 25p, input rate 0, quality class 26, key 3): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c36ba",
+   "va": "0xffffffc0013c36ba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 3: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c36ec",
+   "va": "0xffffffc0013c36ec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 3: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3ab504",
+   "va": "0xffffffc0013ab504",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #3 (4:2:0 8-bit, 23.98p, input rate 0, quality class 26, key 4): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c37ba",
+   "va": "0xffffffc0013c37ba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 4: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c37ec",
+   "va": "0xffffffc0013c37ec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 4: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3ab624",
+   "va": "0xffffffc0013ab624",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #5 (4:2:0 8-bit, 25p, input rate 0, quality class 33, key 6): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c39ba",
+   "va": "0xffffffc0013c39ba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 6: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c39ec",
+   "va": "0xffffffc0013c39ec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 6: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3ab6b4",
+   "va": "0xffffffc0013ab6b4",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #6 (4:2:0 8-bit, 23.98p, input rate 0, quality class 33, key 7): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c3aba",
+   "va": "0xffffffc0013c3aba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 7: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c3aec",
+   "va": "0xffffffc0013c3aec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 7: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3ac824",
+   "va": "0xffffffc0013ac824",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #37 (4:2:2 10-bit, 25p, input rate 0, quality class 24, key 102501): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c59ba",
+   "va": "0xffffffc0013c59ba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 102501: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c59ec",
+   "va": "0xffffffc0013c59ec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 102501: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3ac8b4",
+   "va": "0xffffffc0013ac8b4",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #38 (4:2:2 10-bit, 23.98p, input rate 0, quality class 24, key 102600): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c5aba",
+   "va": "0xffffffc0013c5aba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 102600: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c5aec",
+   "va": "0xffffffc0013c5aec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 102600: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3ac9d4",
+   "va": "0xffffffc0013ac9d4",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #40 (4:2:2 10-bit, 25p, input rate 0, quality class 34, key 102503): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c5cba",
+   "va": "0xffffffc0013c5cba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 102503: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c5cec",
+   "va": "0xffffffc0013c5cec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 102503: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3aca64",
+   "va": "0xffffffc0013aca64",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #41 (4:2:2 10-bit, 23.98p, input rate 0, quality class 34, key 102601): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c5dba",
+   "va": "0xffffffc0013c5dba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 102601: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c5dec",
+   "va": "0xffffffc0013c5dec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 102601: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3ad244",
+   "va": "0xffffffc0013ad244",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #55 (4:2:0 8-bit, 25p, input rate 0, quality class 34, key 102909): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c6bba",
+   "va": "0xffffffc0013c6bba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 102909: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c6bec",
+   "va": "0xffffffc0013c6bec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 102909: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3ad2d4",
+   "va": "0xffffffc0013ad2d4",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #56 (4:2:0 8-bit, 23.98p, input rate 0, quality class 34, key 103004): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c6cba",
+   "va": "0xffffffc0013c6cba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 103004: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c6cec",
+   "va": "0xffffffc0013c6cec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 103004: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3ad3f4",
+   "va": "0xffffffc0013ad3f4",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #58 (4:2:0 8-bit, 25p, input rate 0, quality class 4, key 102911): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c6eba",
+   "va": "0xffffffc0013c6eba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 102911: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c6eec",
+   "va": "0xffffffc0013c6eec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 102911: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3ad484",
+   "va": "0xffffffc0013ad484",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #59 (4:2:0 8-bit, 23.98p, input rate 0, quality class 4, key 103005): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c6fba",
+   "va": "0xffffffc0013c6fba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 103005: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c6fec",
+   "va": "0xffffffc0013c6fec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 103005: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3adbd4",
+   "va": "0xffffffc0013adbd4",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #72 (4:2:2 10-bit, 25p, input rate 0, quality class 21, key 102409): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c7cba",
+   "va": "0xffffffc0013c7cba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 102409: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c7cec",
+   "va": "0xffffffc0013c7cec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 102409: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3adc64",
+   "va": "0xffffffc0013adc64",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #73 (4:2:2 10-bit, 23.98p, input rate 0, quality class 21, key 102410): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c7dba",
+   "va": "0xffffffc0013c7dba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 102410: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c7dec",
+   "va": "0xffffffc0013c7dec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 102410: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3add84",
+   "va": "0xffffffc0013add84",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #75 (4:2:2 10-bit, 25p, input rate 0, quality class 39, key 102603): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c7fba",
+   "va": "0xffffffc0013c7fba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 102603: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c7fec",
+   "va": "0xffffffc0013c7fec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 102603: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3ade14",
+   "va": "0xffffffc0013ade14",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #76 (4:2:2 10-bit, 23.98p, input rate 0, quality class 39, key 102604): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c80ba",
+   "va": "0xffffffc0013c80ba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 102604: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3c80ec",
+   "va": "0xffffffc0013c80ec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 102604: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A1-desc",
+   "file_off": "0x3b00f4",
+   "va": "0xffffffc0013b00f4",
+   "old": "7008",
+   "new": "000a",
+   "note": "descriptor #138 (4:2:2 10-bit, 23.98p, input rate 0, quality class 26, key 102607): height -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3cbeba",
+   "va": "0xffffffc0013cbeba",
+   "old": "7008",
+   "new": "000a",
+   "note": "profile key 102607: raster height +0x06 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "av-cam.bin",
+   "kind": "A2-profile",
+   "file_off": "0x3cbeec",
+   "va": "0xffffffc0013cbeec",
+   "old": "70080000",
+   "new": "000a0000",
+   "note": "profile key 102607: raster height +0x38 -> 2560",
+   "code": false
+  },
+  {
+   "binary": "libmpr.so",
+   "kind": "L4-mp4size",
+   "file_off": "0x224154",
+   "va": "0x224154",
+   "old": "060e8152",
+   "new": "06408152",
+   "note": "MP4 track height, XAVC S 4K (AVC, combs 0, 2): 2160 -> 2560 (`mov w6, #0x870` -> `mov`)",
+   "code": true
+  },
+  {
+   "binary": "libmpr.so",
+   "kind": "L4-mp4size",
+   "file_off": "0x2241a0",
+   "va": "0x2241a0",
+   "old": "060e8152",
+   "new": "06408152",
+   "note": "MP4 track height, XAVC HS 4K (HEVC, combs 5, 7): 2160 -> 2560 (`mov w6, #0x870` -> `mov`)",
+   "code": true
+  }
+ ],
+ "optional_sites": [],
+ "libmpr_code_guards": [
+  {
+   "site": "0x224154",
+   "guards": [
+    {
+     "file_off": "0x22414c",
+     "bytes": "44018052"
+    },
+    {
+     "file_off": "0x224150",
+     "bytes": "45008052"
+    },
+    {
+     "file_off": "0x224158",
+     "bytes": "07e08152"
+    },
+    {
+     "file_off": "0x22415c",
+     "bytes": "f7ffff17"
+    },
+    {
+     "file_off": "0x224198",
+     "bytes": "e503022a"
+    },
+    {
+     "file_off": "0x22419c",
+     "bytes": "44018052"
+    },
+    {
+     "file_off": "0x2241a4",
+     "bytes": "07e08152"
+    },
+    {
+     "file_off": "0x2241a8",
+     "bytes": "28668c52"
+    }
+   ]
+  },
+  {
+   "site": "0x2241a0",
+   "guards": []
+  }
+ ],
+ "mp4_meta": {
+  "what": "the track config 0x2240dc builds (tkhd, stsd and Sony's PROF video entry) says 3840x2560; Sony's XML (NonRealTimeMeta) is unchanged: its size keys the videoCodec name lookup",
+  "sites": [
+   {
+    "file_off": "0x224154",
+    "stock": "mov w6, #0x870",
+    "note": "MP4 track height, XAVC S 4K (AVC, combs 0, 2): 2160 -> 2560"
+   },
+   {
+    "file_off": "0x2241a0",
+    "stock": "mov w6, #0x870",
+    "note": "MP4 track height, XAVC HS 4K (HEVC, combs 5, 7): 2160 -> 2560"
+   }
+  ],
+  "checked": "build/emu_mp4_meta.py --build a1m2_400 -> evidence/a1m2/encoder/mp4_meta_emu_a1m2.json"
+ }
+}

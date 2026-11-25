@@ -1,0 +1,1235 @@
+{
+ "design": "lcdcycle_a1m2_v1",
+ "title": "A1 II 4.00: C3 steps the rear-screen preview 3:2 -> 2:1 -> 2.25:1 -> 2.4:1 in movie mode and keeps the focus frames: VDF words and the frame widgets' expected rectangle, written from appFw",
+ "generated_by": "build/build_lcdcycle_a1m2.py",
+ "library": "appFw.so",
+ "artifact_sha256": {
+  "appFw.so": "d04cc70b41382a147ef5c67d7e86ba706d66526aee17619767b07cbb416b77ca"
+ },
+ "coprocessor_image_sha256": "96b41427958c1b412b3e15c5bd9b51e34657ae1e1246344438b8368031ca4859",
+ "build": "a1m2_400",
+ "ported_from": "lcdcycle_v7 (A7 IV 6.02; v6 works on that camera, F858, F969; v7 in the F989 baseline) in the form of lcdcycle_zv_v1 / lcdcycle_c2_v1; the split-entry rule from lcdcycle_s3_v1 (A7S III 5.01; ran on that camera)",
+ "write_order": "the patches in the listed order to apply (cave, then the hook); the reverse order to put back",
+ "trigger": "0x2150006",
+ "triggers": {
+  "0x2150006": "EVENT_INPUT_KEY_TACT_CUSTOM3_ON (C3, as on the A7 IV)"
+ },
+ "ignored_event": "0x20f00bc",
+ "calls": {
+  "appfw_dlsym": "0x155fe80",
+  "appfw_system_mode": "0x268eb3c",
+  "appfw_vdf_layout": "0x317926c"
+ },
+ "cave": {
+  "from": "0x4d0d8b0",
+  "bytes": 1676,
+  "region": "first segment tail",
+  "region_end": "0x4d0e000",
+  "page_end": "0x4d0e000",
+  "inside_zero_bytes": true,
+  "segment_end": "0x4d0d8a5",
+  "mapping_bytes": "0x4d0e000",
+  "available_bytes": 1872,
+  "second_segment_file_offset": "0x4d0e780",
+  "old_bytes": "zero: the 16-aligned tail of the first (r-x) segment's last page, past its file size; mapped with the page, as the A7 IV's cave"
+ },
+ "step_routine": "build/lcdcycle_a1m2/step.c at 0x4d0d900 (1596 bytes)",
+ "stub_bytes": 80,
+ "lines": [
+  {
+   "name": "A",
+   "line": "0x1fac80",
+   "first_site_word": "0x1faca4",
+   "words": 1,
+   "guards": 4,
+   "candidates": 4
+  },
+  {
+   "name": "B",
+   "line": "0x1faf80",
+   "first_site_word": "0x1fafa4",
+   "words": 2,
+   "guards": 3,
+   "candidates": 4
+  },
+  {
+   "name": "T0",
+   "line": "0xf82400",
+   "first_site_word": "0xf82404",
+   "words": 2,
+   "guards": 4,
+   "candidates": 5
+  },
+  {
+   "name": "T1a",
+   "line": "0xf82440",
+   "first_site_word": "0xf8247c",
+   "words": 1,
+   "guards": 4,
+   "candidates": 5
+  },
+  {
+   "name": "T1b",
+   "line": "0xf82480",
+   "first_site_word": "0xf82480",
+   "words": 1,
+   "guards": 4,
+   "candidates": 5
+  },
+  {
+   "name": "T2",
+   "line": "0xf824c0",
+   "first_site_word": "0xf824f4",
+   "words": 2,
+   "guards": 4,
+   "candidates": 5
+  }
+ ],
+ "states": {
+  "3:2": [
+   "0x0",
+   "0xe09f04f",
+   "0x2010bf08"
+  ],
+  "2:1": [
+   "0x3",
+   "0xe01f04f",
+   "0x2002bf08"
+  ],
+  "2.25:1": [
+   "0x3",
+   "0xe04f04f",
+   "0x2009bf08"
+  ],
+  "2.4:1": [
+   "0x3",
+   "0xe05f04f",
+   "0x200cbf08"
+  ]
+ },
+ "frame_rectangles": {
+  "entries": [
+   "0xf82404",
+   "0xf8247c",
+   "0xf824f4"
+  ],
+  "3:2": [
+   0,
+   0,
+   640,
+   480
+  ],
+  "2:1": [
+   0,
+   60,
+   640,
+   360
+  ],
+  "2.25:1": [
+   0,
+   80,
+   640,
+   320
+  ],
+  "2.4:1": [
+   0,
+   90,
+   640,
+   300
+  ],
+  "stock": [
+   0,
+   38,
+   640,
+   404
+  ],
+  "note": "{x, y, w, h} u16 in a 640x480 grid, row 1 (rear panel) column 3 (16:9 picture) of the three tables; the widgets accept 5 units either way. 3:2, 2:1 and 2.4:1 are the values that work on the A7 IV (F969); 2.25:1 is (0, 80, 640, 320) by the same rule. build/emu_lcd_a1m2.py runs the A1 II's own picture-ratio function with each state's words and its AF-window check 0x128530 against these entries on 1024 x 682 and 720 x 480: all accepted. The entry 0xf8247c lies across two 64-byte lines (0xf8247c / 0xf82480): both halves or neither"
+ },
+ "checked_in_files": {
+  "system_mode_field": "+0xd508 (A7 IV +0xd798, A7C II +0xcf50, ZV-E1 +0xced0)",
+  "dlsym_got": "0x56d6ba8",
+  "frame_widget_table_loads": [
+   "0x128644",
+   "0x128e18",
+   "0x12993a"
+  ]
+ },
+ "goes_with": [
+  "an A1 II open-gate state whose live view is a 16:9 frame holding the whole 3:2 area (as the A7 IV's)",
+  "lcdfill_a1m2_v1 (fit word 0x1faca4 = 0 and the three entries at the 3:2 rectangle): without the fill word a press does nothing"
+ ],
+ "not_checked": [
+  "on a camera: nothing of this design has run on an A1 II",
+  "that the key labelled C3 sends 0x2150006 (the name record and id are the A7 IV's, where C3 = 0x2150006 was seen on the camera; the A1 II's table has CUSTOM, CUSTOM2, CUSTOM3, CUSTOM5 and CUSTOM6 and the body has C1-C4)",
+  "that system mode 3 is movie on this camera (the accessor is found by call position; its field offset differs from the A7 IV's)",
+  "that dlsym(RTLD_DEFAULT) finds libsencore's three functions in im.elf (the names are exported by this build's libsencore.so)",
+  "that the rear panel reports panel code 1 (3:2) and that the frame widgets use row 1 for it (the A1 II's check 0x128530 asks 0x693b0e)",
+  "the remote-send (0x128d50) and tracking (0x1297d8) widgets' checks were not emulated (same tables and rectangles)",
+  "that the picture-ratio flag (bit 0 of its fourth argument; 1 selects 100/235) is 0 in the open-gate state, as on the A7S III",
+  "with the camera's own De-Squeeze Display on, VDF uses its calculator 0x1fae78 instead of the picture-ratio function: the cycle's picture words then have no effect (keep De-Squeeze Display off)",
+  "the viewfinder: not handled (as on the A7 IV); it stays letterboxed and squeezed"
+ ],
+ "note": "put back (level 20) removes the code; the coprocessor words stay in the mode last chosen until a cold boot. In movie mode the C3 key's assigned function no longer runs (the press is turned into the ignored event); in stills C3 is normal",
+ "patches": [
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d8b0",
+   "va": "0x4d0d8b0",
+   "old": "00000000000000000000000000000000",
+   "new": "300840b9d1008052b142a0721f02116b",
+   "code": true,
+   "note": "cave bytes 0x4d0d8b0-0x4d0d8c0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d8c0",
+   "va": "0x4d0d8c0",
+   "old": "00000000000000000000000000000000",
+   "new": "c1010054fd7bbca9fd030091e00701a9",
+   "code": true,
+   "note": "cave bytes 0x4d0d8c0-0x4d0d8d0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d8d0",
+   "va": "0x4d0d8d0",
+   "old": "00000000000000000000000000000000",
+   "new": "e20f02a90b000094f003002ae20f42a9",
+   "code": true,
+   "note": "cave bytes 0x4d0d8d0-0x4d0d8e0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d8e0",
+   "va": "0x4d0d8e0",
+   "old": "00000000000000000000000000000000",
+   "new": "e00741a99000003491178052f141a072",
+   "code": true,
+   "note": "cave bytes 0x4d0d8e0-0x4d0d8f0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d8f0",
+   "va": "0x4d0d8f0",
+   "old": "00000000000000000000000000000000",
+   "new": "310800b9fd7bc4a8ff0312d11b524017",
+   "code": true,
+   "note": "cave bytes 0x4d0d8f0-0x4d0d900 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d900",
+   "va": "0x4d0d900",
+   "old": "00000000000000000000000000000000",
+   "new": "ffc302d1fe3300f9fa6707a9f85f08a9",
+   "code": true,
+   "note": "cave bytes 0x4d0d900-0x4d0d910 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d910",
+   "va": "0x4d0d910",
+   "old": "00000000000000000000000000000000",
+   "new": "f65709a9f44f0aa989046697080040b9",
+   "code": true,
+   "note": "cave bytes 0x4d0d910-0x4d0d920 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d920",
+   "va": "0x4d0d920",
+   "old": "00000000000000000000000000000000",
+   "new": "1f0d0071610c00541f2003d5a1220010",
+   "code": true,
+   "note": "cave bytes 0x4d0d920-0x4d0d930 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d930",
+   "va": "0x4d0d930",
+   "old": "00000000000000000000000000000000",
+   "new": "e0031faa53492197f40300aa01000090",
+   "code": true,
+   "note": "cave bytes 0x4d0d930-0x4d0d940 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d940",
+   "va": "0x4d0d940",
+   "old": "00000000000000000000000000000000",
+   "new": "21403691e0031faa4e492197f30300aa",
+   "code": true,
+   "note": "cave bytes 0x4d0d940-0x4d0d950 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d950",
+   "va": "0x4d0d950",
+   "old": "00000000000000000000000000000000",
+   "new": "0100009021743691e0031faa49492197",
+   "code": true,
+   "note": "cave bytes 0x4d0d950-0x4d0d960 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d960",
+   "va": "0x4d0d960",
+   "old": "00000000000000000000000000000000",
+   "new": "e80300aa20008052e82700f9b40c00b4",
+   "code": true,
+   "note": "cave bytes 0x4d0d960-0x4d0d970 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d970",
+   "va": "0x4d0d970",
+   "old": "00000000000000000000000000000000",
+   "new": "930c00b4680c00b4e1b3019100008252",
+   "code": true,
+   "note": "cave bytes 0x4d0d970-0x4d0d980 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d980",
+   "va": "0x4d0d980",
+   "old": "00000000000000000000000000000000",
+   "new": "ff6f00b980023fd6e02b00f9800b00b4",
+   "code": true,
+   "note": "cave bytes 0x4d0d980-0x4d0d990 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d990",
+   "va": "0x4d0d990",
+   "old": "00000000000000000000000000000000",
+   "new": "08044091aa00c0d2e90300aa1f010aeb",
+   "code": true,
+   "note": "cave bytes 0x4d0d990-0x4d0d9a0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d9a0",
+   "va": "0x4d0d9a0",
+   "old": "00000000000000000000000000000000",
+   "new": "f9031f2ac808005428fd62d3880800b4",
+   "code": true,
+   "note": "cave bytes 0x4d0d9a0-0x4d0d9b0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d9b0",
+   "va": "0x4d0d9b0",
+   "old": "00000000000000000000000000000000",
+   "new": "28154092480800b5600c809242008252",
+   "code": true,
+   "note": "cave bytes 0x4d0d9b0-0x4d0d9c0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d9c0",
+   "va": "0x4d0d9c0",
+   "old": "00000000000000000000000000000000",
+   "new": "0100009021c03691080780520202a072",
+   "code": true,
+   "note": "cave bytes 0x4d0d9c0-0x4d0d9d0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d9d0",
+   "va": "0x4d0d9d0",
+   "old": "00000000000000000000000000000000",
+   "new": "010000d42007f8b72a2d4092e8ff8352",
+   "code": true,
+   "note": "cave bytes 0x4d0d9d0-0x4d0d9e0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d9e0",
+   "va": "0x4d0d9e0",
+   "old": "00000000000000000000000000000000",
+   "new": "f40300aae40300aae0031faa5801080b",
+   "code": true,
+   "note": "cave bytes 0x4d0d9e0-0x4d0d9f0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0d9f0",
+   "va": "0x4d0d9f0",
+   "old": "00000000000000000000000000000000",
+   "new": "c81b805225cd74920107749262008052",
+   "code": true,
+   "note": "cave bytes 0x4d0d9f0-0x4d0da00 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0da00",
+   "va": "0x4d0da00",
+   "old": "00000000000000000000000000000000",
+   "new": "23008052010000d408008292f9031f2a",
+   "code": true,
+   "note": "cave bytes 0x4d0da00-0x4d0da10 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0da10",
+   "va": "0x4d0da10",
+   "old": "00000000000000000000000000000000",
+   "new": "1f0008eb68040054f50300aa082c4092",
+   "code": true,
+   "note": "cave bytes 0x4d0da10-0x4d0da20 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0da20",
+   "va": "0x4d0da20",
+   "old": "00000000000000000000000000000000",
+   "new": "080400b5a8020a8be023019121008052",
+   "code": true,
+   "note": "cave bytes 0x4d0da20-0x4d0da30 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0da30",
+   "va": "0x4d0da30",
+   "old": "00000000000000000000000000000000",
+   "new": "0201805223018052e82f00f957000094",
+   "code": true,
+   "note": "cave bytes 0x4d0da30-0x4d0da40 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0da40",
+   "va": "0x4d0da40",
+   "old": "00000000000000000000000000000000",
+   "new": "1f0c007148020054f703002af607801a",
+   "code": true,
+   "note": "cave bytes 0x4d0da40-0x4d0da50 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0da50",
+   "va": "0x4d0da50",
+   "old": "00000000000000000000000000000000",
+   "new": "e0230191e1031f2ae203172ae303162a",
+   "code": true,
+   "note": "cave bytes 0x4d0da50-0x4d0da60 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0da60",
+   "va": "0x4d0da60",
+   "old": "00000000000000000000000000000000",
+   "new": "4e0000941f240071f9031f2a20010054",
+   "code": true,
+   "note": "cave bytes 0x4d0da60-0x4d0da70 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0da70",
+   "va": "0x4d0da70",
+   "old": "00000000000000000000000000000000",
+   "new": "e023019121008052e203172ae303162a",
+   "code": true,
+   "note": "cave bytes 0x4d0da70-0x4d0da80 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0da80",
+   "va": "0x4d0da80",
+   "old": "00000000000000000000000000000000",
+   "new": "460000941f240071a1040054f9031f2a",
+   "code": true,
+   "note": "cave bytes 0x4d0da80-0x4d0da90 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0da90",
+   "va": "0x4d0da90",
+   "old": "00000000000000000000000000000000",
+   "new": "e00315aa01077492e81a8052010000d4",
+   "code": true,
+   "note": "cave bytes 0x4d0da90-0x4d0daa0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0daa0",
+   "va": "0x4d0daa0",
+   "old": "00000000000000000000000000000000",
+   "new": "e00314aa28078052010000d404000014",
+   "code": true,
+   "note": "cave bytes 0x4d0daa0-0x4d0dab0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dab0",
+   "va": "0x4d0dab0",
+   "old": "00000000000000000000000000000000",
+   "new": "e0031f2a13000014f9031f2ae06f40b9",
+   "code": true,
+   "note": "cave bytes 0x4d0dab0-0x4d0dac0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dac0",
+   "va": "0x4d0dac0",
+   "old": "00000000000000000000000000000000",
+   "new": "60023fd6d9010034e8031faae9630091",
+   "code": true,
+   "note": "cave bytes 0x4d0dac0-0x4d0dad0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dad0",
+   "va": "0x4d0dad0",
+   "old": "00000000000000000000000000000000",
+   "new": "3f6928b8081100911fc100f1a1ffff54",
+   "code": true,
+   "note": "cave bytes 0x4d0dad0-0x4d0dae0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dae0",
+   "va": "0x4d0dae0",
+   "old": "00000000000000000000000000000000",
+   "new": "e0630091e1230091ff0b00b9ff0f00b9",
+   "code": true,
+   "note": "cave bytes 0x4d0dae0-0x4d0daf0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0daf0",
+   "va": "0x4d0daf0",
+   "old": "00000000000000000000000000000000",
+   "new": "ff1300b9ff1700b9ddad919720008052",
+   "code": true,
+   "note": "cave bytes 0x4d0daf0-0x4d0db00 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0db00",
+   "va": "0x4d0db00",
+   "old": "00000000000000000000000000000000",
+   "new": "f44f4aa9fe3340f9f65749a9f85f48a9",
+   "code": true,
+   "note": "cave bytes 0x4d0db00-0x4d0db10 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0db10",
+   "va": "0x4d0db10",
+   "old": "00000000000000000000000000000000",
+   "new": "fa6747a9ffc30291c0035fd657008052",
+   "code": true,
+   "note": "cave bytes 0x4d0db10-0x4d0db20 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0db20",
+   "va": "0x4d0db20",
+   "old": "00000000000000000000000000000000",
+   "new": "99008052e0230191ff0e007121020054",
+   "code": true,
+   "note": "cave bytes 0x4d0db20-0x4d0db30 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0db30",
+   "va": "0x4d0db30",
+   "old": "00000000000000000000000000000000",
+   "new": "8100805202018052230180529a008052",
+   "code": true,
+   "note": "cave bytes 0x4d0db30-0x4d0db40 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0db40",
+   "va": "0x4d0db40",
+   "old": "00000000000000000000000000000000",
+   "new": "160000941f240071e0010054e0230191",
+   "code": true,
+   "note": "cave bytes 0x4d0db40-0x4d0db50 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0db50",
+   "va": "0x4d0db50",
+   "old": "00000000000000000000000000000000",
+   "new": "e103172a02018052e303162a0f000094",
+   "code": true,
+   "note": "cave bytes 0x4d0db50-0x4d0db60 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0db60",
+   "va": "0x4d0db60",
+   "old": "00000000000000000000000000000000",
+   "new": "1f240071e00a437a3a03971a06000014",
+   "code": true,
+   "note": "cave bytes 0x4d0db60-0x4d0db70 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0db70",
+   "va": "0x4d0db70",
+   "old": "00000000000000000000000000000000",
+   "new": "e103172a02018052e303162a07000094",
+   "code": true,
+   "note": "cave bytes 0x4d0db70-0x4d0db80 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0db80",
+   "va": "0x4d0db80",
+   "old": "00000000000000000000000000000000",
+   "new": "fa03172a5f17007157070011c3fcff54",
+   "code": true,
+   "note": "cave bytes 0x4d0db80-0x4d0db90 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0db90",
+   "va": "0x4d0db90",
+   "old": "00000000000000000000000000000000",
+   "new": "39008052bfffff17fd7bbaa9fc6f01a9",
+   "code": true,
+   "note": "cave bytes 0x4d0db90-0x4d0dba0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dba0",
+   "va": "0x4d0dba0",
+   "old": "00000000000000000000000000000000",
+   "new": "fa6702a9f85f03a9f65704a9f44f05a9",
+   "code": true,
+   "note": "cave bytes 0x4d0dba0-0x4d0dbb0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dbb0",
+   "va": "0x4d0dbb0",
+   "old": "00000000000000000000000000000000",
+   "new": "880180521900009039f336912864a89b",
+   "code": true,
+   "note": "cave bytes 0x4d0dbb0-0x4d0dbc0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dbc0",
+   "va": "0x4d0dbc0",
+   "old": "00000000000000000000000000000000",
+   "new": "f703012a1a0840f9f303032af40300aa",
+   "code": true,
+   "note": "cave bytes 0x4d0dbc0-0x4d0dbd0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dbd0",
+   "va": "0x4d0dbd0",
+   "old": "00000000000000000000000000000000",
+   "new": "f603022a150140b91b2140391c254039",
+   "code": true,
+   "note": "cave bytes 0x4d0dbd0-0x4d0dbe0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dbe0",
+   "va": "0x4d0dbe0",
+   "old": "00000000000000000000000000000000",
+   "new": "1d114039181d4039e10315aa5a000094",
+   "code": true,
+   "note": "cave bytes 0x4d0dbe0-0x4d0dbf0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dbf0",
+   "va": "0x4d0dbf0",
+   "old": "00000000000000000000000000000000",
+   "new": "2001003420018052f44f45a9f65744a9",
+   "code": true,
+   "note": "cave bytes 0x4d0dbf0-0x4d0dc00 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dc00",
+   "va": "0x4d0dc00",
+   "old": "00000000000000000000000000000000",
+   "new": "f85f43a9fa6742a9fc6f41a9fd7bc6a8",
+   "code": true,
+   "note": "cave bytes 0x4d0dc00-0x4d0dc10 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dc10",
+   "va": "0x4d0dc10",
+   "old": "00000000000000000000000000000000",
+   "new": "c0035fd6e903172a88018052570b1d8b",
+   "code": true,
+   "note": "cave bytes 0x4d0dc10-0x4d0dc20 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dc20",
+   "va": "0x4d0dc20",
+   "old": "00000000000000000000000000000000",
+   "new": "2865a89b0a1540390800009008113891",
+   "code": true,
+   "note": "cave bytes 0x4d0dc20-0x4d0dc30 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dc30",
+   "va": "0x4d0dc30",
+   "old": "00000000000000000000000000000000",
+   "new": "0b091b8b08091c8b5f0500714a859f1a",
+   "code": true,
+   "note": "cave bytes 0x4d0dc30-0x4d0dc40 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dc40",
+   "va": "0x4d0dc40",
+   "old": "00000000000000000000000000000000",
+   "new": "6b1100916cc19fb8ec7a6cb86d0140b9",
+   "code": true,
+   "note": "cave bytes 0x4d0dc40-0x4d0dc50 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dc50",
+   "va": "0x4d0dc50",
+   "old": "00000000000000000000000000000000",
+   "new": "9f010d6b01fdff544a0500f16b210091",
+   "code": true,
+   "note": "cave bytes 0x4d0dc50-0x4d0dc60 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dc60",
+   "va": "0x4d0dc60",
+   "old": "00000000000000000000000000000000",
+   "new": "21ffff548b0180521f0700710c7f7ed3",
+   "code": true,
+   "note": "cave bytes 0x4d0dc60-0x4d0dc70 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dc70",
+   "va": "0x4d0dc70",
+   "old": "00000000000000000000000000000000",
+   "new": "2965ab9bed03162a2e018052ef0308aa",
+   "code": true,
+   "note": "cave bytes 0x4d0dc70-0x4d0dc80 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dc80",
+   "va": "0x4d0dc80",
+   "old": "00000000000000000000000000000000",
+   "new": "2b19403909879f1adf220071f10309aa",
+   "code": true,
+   "note": "cave bytes 0x4d0dc80-0x4d0dc90 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dc90",
+   "va": "0x4d0dc90",
+   "old": "00000000000000000000000000000000",
+   "new": "f20317aa44114dfae0030faaf0179f1a",
+   "code": true,
+   "note": "cave bytes 0x4d0dc90-0x4d0dca0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dca0",
+   "va": "0x4d0dca0",
+   "old": "00000000000000000000000000000000",
+   "new": "414640b8024440b83f00026b10029f1a",
+   "code": true,
+   "note": "cave bytes 0x4d0dca0-0x4d0dcb0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dcb0",
+   "va": "0x4d0dcb0",
+   "old": "00000000000000000000000000000000",
+   "new": "310600f161ffff541f020071ef010c8b",
+   "code": true,
+   "note": "cave bytes 0x4d0dcb0-0x4d0dcc0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dcc0",
+   "va": "0x4d0dcc0",
+   "old": "00000000000000000000000000000000",
+   "new": "c0018a1a4a0500911f24007142014bfa",
+   "code": true,
+   "note": "cave bytes 0x4d0dcc0-0x4d0dcd0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dcd0",
+   "va": "0x4d0dcd0",
+   "old": "00000000000000000000000000000000",
+   "new": "c3fdff547f26007100f9ff541f240071",
+   "code": true,
+   "note": "cave bytes 0x4d0dcd0-0x4d0dce0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dce0",
+   "va": "0x4d0dce0",
+   "old": "00000000000000000000000000000000",
+   "new": "c0f8ff540a7f131b16492a8be80317aa",
+   "code": true,
+   "note": "cave bytes 0x4d0dce0-0x4d0dcf0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dcf0",
+   "va": "0x4d0dcf0",
+   "old": "00000000000000000000000000000000",
+   "new": "ea0316aa4b4540b8290500f10b4500b8",
+   "code": true,
+   "note": "cave bytes 0x4d0dcf0-0x4d0dd00 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dd00",
+   "va": "0x4d0dd00",
+   "old": "00000000000000000000000000000000",
+   "new": "a1ffff54880640a920008052e20315aa",
+   "code": true,
+   "note": "cave bytes 0x4d0dd00-0x4d0dd10 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dd10",
+   "va": "0x4d0dd10",
+   "old": "00000000000000000000000000000000",
+   "new": "0308805200013fd6e0f6ff35e00314aa",
+   "code": true,
+   "note": "cave bytes 0x4d0dd10-0x4d0dd20 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dd20",
+   "va": "0x4d0dd20",
+   "old": "00000000000000000000000000000000",
+   "new": "e10315aa0c00009460f6ff351f070071",
+   "code": true,
+   "note": "cave bytes 0x4d0dd20-0x4d0dd30 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dd30",
+   "va": "0x4d0dd30",
+   "old": "00000000000000000000000000000000",
+   "new": "08879f1ae94640b8ca4640b83f010a6b",
+   "code": true,
+   "note": "cave bytes 0x4d0dd30-0x4d0dd40 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dd40",
+   "va": "0x4d0dd40",
+   "old": "00000000000000000000000000000000",
+   "new": "a1f5ff54080500f161ffff54e003132a",
+   "code": true,
+   "note": "cave bytes 0x4d0dd40-0x4d0dd50 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dd50",
+   "va": "0x4d0dd50",
+   "old": "00000000000000000000000000000000",
+   "new": "aaffff17090840f9e8031faaeaeb0332",
+   "code": true,
+   "note": "cave bytes 0x4d0dd50-0x4d0dd60 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dd60",
+   "va": "0x4d0dd60",
+   "old": "00000000000000000000000000000000",
+   "new": "2a6928b8081100911f0101f1a1ffff54",
+   "code": true,
+   "note": "cave bytes 0x4d0dd60-0x4d0dd70 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dd70",
+   "va": "0x4d0dd70",
+   "old": "00000000000000000000000000000000",
+   "new": "040840a9e0031f2a0308805280001fd6",
+   "code": true,
+   "note": "cave bytes 0x4d0dd70-0x4d0dd80 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dd80",
+   "va": "0x4d0dd80",
+   "old": "00000000000000000000000000000000",
+   "new": "5f5a39646d6d5f616c6c6f636a506a00",
+   "code": true,
+   "note": "cave bytes 0x4d0dd80-0x4d0dd90 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dd90",
+   "va": "0x4d0dd90",
+   "old": "00000000000000000000000000000000",
+   "new": "5f5a38646d6d5f667265656a0073656e",
+   "code": true,
+   "note": "cave bytes 0x4d0dd90-0x4d0dda0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dda0",
+   "va": "0x4d0dda0",
+   "old": "00000000000000000000000000000000",
+   "new": "5f646d615f7472616e73666572000000",
+   "code": true,
+   "note": "cave bytes 0x4d0dda0-0x4d0ddb0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0ddb0",
+   "va": "0x4d0ddb0",
+   "old": "00000000000000000000000000000000",
+   "new": "2f6465762f6d656d0000000080ac1f00",
+   "code": true,
+   "note": "cave bytes 0x4d0ddb0-0x4d0ddc0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0ddc0",
+   "va": "0x4d0ddc0",
+   "old": "00000000000000000000000000000000",
+   "new": "090404010008000080af1f0009030402",
+   "code": true,
+   "note": "cave bytes 0x4d0ddc0-0x4d0ddd0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0ddd0",
+   "va": "0x4d0ddd0",
+   "old": "00000000000000000000000000000000",
+   "new": "0c1200000024f800010405021a220000",
+   "code": true,
+   "note": "cave bytes 0x4d0ddd0-0x4d0dde0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dde0",
+   "va": "0x4d0dde0",
+   "old": "00000000000000000000000000000000",
+   "new": "4024f8000f0405012c3400008024f800",
+   "code": true,
+   "note": "cave bytes 0x4d0dde0-0x4d0ddf0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0ddf0",
+   "va": "0x4d0ddf0",
+   "old": "00000000000000000000000000000000",
+   "new": "0004050139410000c024f8000d040502",
+   "code": true,
+   "note": "cave bytes 0x4d0ddf0-0x4d0de00 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0de00",
+   "va": "0x4d0de00",
+   "old": "00000000000000000000000000000000",
+   "new": "46220000fdffffff38bf0320feffffff",
+   "code": true,
+   "note": "cave bytes 0x4d0de00-0x4d0de10 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0de10",
+   "va": "0x4d0de10",
+   "old": "00000000000000000000000000000000",
+   "new": "704700bfffffffff0300000001000000",
+   "code": true,
+   "note": "cave bytes 0x4d0de10-0x4d0de20 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0de20",
+   "va": "0x4d0de20",
+   "old": "00000000000000000000000000000000",
+   "new": "00000000000000000300000003000000",
+   "code": true,
+   "note": "cave bytes 0x4d0de20-0x4d0de30 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0de30",
+   "va": "0x4d0de30",
+   "old": "00000000000000000000000000000000",
+   "new": "03000000ffffffffeb0008bf02000000",
+   "code": true,
+   "note": "cave bytes 0x4d0de30-0x4d0de40 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0de40",
+   "va": "0x4d0de40",
+   "old": "00000000000000000000000000000000",
+   "new": "07e00120030000004ff0010e4ff0090e",
+   "code": true,
+   "note": "cave bytes 0x4d0de40-0x4d0de50 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0de50",
+   "va": "0x4d0de50",
+   "old": "00000000000000000000000000000000",
+   "new": "08bf10204ff0010e08bf02204ff0040e",
+   "code": true,
+   "note": "cave bytes 0x4d0de50-0x4d0de60 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0de60",
+   "va": "0x4d0de60",
+   "old": "00000000000000000000000000000000",
+   "new": "08bf09204ff0050e08bf0c20ffffffff",
+   "code": true,
+   "note": "cave bytes 0x4d0de60-0x4d0de70 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0de70",
+   "va": "0x4d0de70",
+   "old": "00000000000000000000000000000000",
+   "new": "aa01e001020000000000320003000000",
+   "code": true,
+   "note": "cave bytes 0x4d0de70-0x4d0de80 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0de80",
+   "va": "0x4d0de80",
+   "old": "00000000000000000000000000000000",
+   "new": "80027c010400000000001a0000000000",
+   "code": true,
+   "note": "cave bytes 0x4d0de80-0x4d0de90 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0de90",
+   "va": "0x4d0de90",
+   "old": "00000000000000000000000000000000",
+   "new": "8002e00100003c008002680100005000",
+   "code": true,
+   "note": "cave bytes 0x4d0de90-0x4d0dea0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dea0",
+   "va": "0x4d0dea0",
+   "old": "00000000000000000000000000000000",
+   "new": "8002400100005a0080022c0100002600",
+   "code": true,
+   "note": "cave bytes 0x4d0dea0-0x4d0deb0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0deb0",
+   "va": "0x4d0deb0",
+   "old": "00000000000000000000000000000000",
+   "new": "80029401fcffffff24000000fdffffff",
+   "code": true,
+   "note": "cave bytes 0x4d0deb0-0x4d0dec0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dec0",
+   "va": "0x4d0dec0",
+   "old": "00000000000000000000000000000000",
+   "new": "3802e001feffffff6b000000ffffffff",
+   "code": true,
+   "note": "cave bytes 0x4d0dec0-0x4d0ded0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0ded0",
+   "va": "0x4d0ded0",
+   "old": "00000000000000000000000000000000",
+   "new": "aa01e0010000000000003c0000005000",
+   "code": true,
+   "note": "cave bytes 0x4d0ded0-0x4d0dee0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0dee0",
+   "va": "0x4d0dee0",
+   "old": "00000000000000000000000000000000",
+   "new": "00005a00000026000100000000003200",
+   "code": true,
+   "note": "cave bytes 0x4d0dee0-0x4d0def0 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0def0",
+   "va": "0x4d0def0",
+   "old": "00000000000000000000000000000000",
+   "new": "0200000080027c010300000000001a00",
+   "code": true,
+   "note": "cave bytes 0x4d0def0-0x4d0df00 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0df00",
+   "va": "0x4d0df00",
+   "old": "00000000000000000000000000000000",
+   "new": "040000008002ac018002e00180026801",
+   "code": true,
+   "note": "cave bytes 0x4d0df00-0x4d0df10 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0df10",
+   "va": "0x4d0df10",
+   "old": "00000000000000000000000000000000",
+   "new": "8002400180022c0180029401fdffffff",
+   "code": true,
+   "note": "cave bytes 0x4d0df10-0x4d0df20 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0df20",
+   "va": "0x4d0df20",
+   "old": "00000000000000000000000000000000",
+   "new": "3802e001feffffff6b000000ffffffff",
+   "code": true,
+   "note": "cave bytes 0x4d0df20-0x4d0df30 (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "cave",
+   "file_off": "0x4d0df30",
+   "va": "0x4d0df30",
+   "old": "000000000000000000000000",
+   "new": "aa01e0010200000000003200",
+   "code": true,
+   "note": "cave bytes 0x4d0df30-0x4d0df3c (zero tail of the first segment's last page, past its file size 0x4d0d8a5)"
+  },
+  {
+   "binary": "appFw.so",
+   "kind": "hook",
+   "file_off": "0x1d22164",
+   "va": "0x1d22164",
+   "old": "ff0312d1",
+   "new": "d3adbf14",
+   "code": true,
+   "note": "process_input_event: `sub sp, sp, #0x480` -> `b 0x4d0d8b0` (the stub does it)"
+  }
+ ]
+}

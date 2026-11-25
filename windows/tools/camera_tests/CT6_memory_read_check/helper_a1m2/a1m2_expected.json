@@ -1,0 +1,268 @@
+{
+ "label": "a1m2read_v1",
+ "cp_lo": 786432,
+ "cp_hi": 40894464,
+ "avcam_phys": 17196646400,
+ "avcam_reserve": "@0x401000000",
+ "id_files": {
+  "/libmpr.so": "a19209d3e40fbfac75cfa14ffe1c6a76772ca73ef045f6c5a96c4ac68431b391",
+  "/libsencore.so": "451be2666adcfb75eb49c379fa75f53b48e3a609121b2a7faf55583575faa453",
+  "/libJiritsu.so": "e1bf563806b3bbf95c09e19e9a0282c49d32b22a56f686e4cca7fa720031cc4b"
+ },
+ "id_pages": {
+  "0x128000": "fc86d25089cd6bed881fbf6001bff0d383f4f3045afc2f05e43227c289f0d28f",
+  "0x279000": "330782b7f57a8f6aa0528af393658db55672c60fdc7a220c2e3f0d0a15c157e2",
+  "0x501000": "2d1c244b5c008001ff6d2bbb8e142d63f62536be965aac7fe9bd850545a0d12d",
+  "0xa0d000": "5095d6e8080e2d3e9c7dd40b9396f0ee18800a6480e7d1125f4e1a6b01bed63d"
+ },
+ "cp_sites": [
+  {
+   "name": "record_8c0_left",
+   "address": "0xdf6844",
+   "length": 3000,
+   "soft": 0
+  },
+  {
+   "name": "record_8c0_right",
+   "address": "0xdf73fc",
+   "length": 3000,
+   "soft": 0
+  },
+  {
+   "name": "record_28c0_left",
+   "address": "0xe023c4",
+   "length": 3000,
+   "soft": 0
+  },
+  {
+   "name": "record_28c0_right",
+   "address": "0xe02f7c",
+   "length": 3000,
+   "soft": 0
+  },
+  {
+   "name": "geometry",
+   "address": "0xe4b658",
+   "length": 48,
+   "soft": 0
+  },
+  {
+   "name": "crop",
+   "address": "0xe9ec18",
+   "length": 80,
+   "soft": 0
+  },
+  {
+   "name": "readout",
+   "address": "0xea0860",
+   "length": 176,
+   "soft": 0
+  },
+  {
+   "name": "window",
+   "address": "0xfa02f6",
+   "length": 152,
+   "soft": 0
+  },
+  {
+   "name": "pdaf",
+   "address": "0xfa0a16",
+   "length": 152,
+   "soft": 0
+  },
+  {
+   "name": "lc",
+   "address": "0xfa1106",
+   "length": 56,
+   "soft": 0
+  },
+  {
+   "name": "matrix_start",
+   "address": "0x11ee706",
+   "length": 1,
+   "soft": 0
+  },
+  {
+   "name": "matrix_half",
+   "address": "0x11ee726",
+   "length": 1,
+   "soft": 0
+  },
+  {
+   "name": "matrix_r90",
+   "address": "0x11ee846",
+   "length": 1,
+   "soft": 0
+  },
+  {
+   "name": "stored_record_0x820",
+   "address": "0x24dbcf4",
+   "length": 368,
+   "soft": 1
+  },
+  {
+   "name": "stored_record_0x2820",
+   "address": "0x24dbe64",
+   "length": 368,
+   "soft": 1
+  },
+  {
+   "name": "stored_record_0x8c0",
+   "address": "0x24dbfd4",
+   "length": 368,
+   "soft": 1
+  },
+  {
+   "name": "stored_record_0x28c0",
+   "address": "0x24dc144",
+   "length": 368,
+   "soft": 1
+  },
+  {
+   "name": "outsize",
+   "address": "0x19384d0",
+   "length": 4,
+   "soft": 1
+  },
+  {
+   "name": "outsize_guard0",
+   "address": "0x19384c8",
+   "length": 8,
+   "soft": 1
+  },
+  {
+   "name": "outsize_guard1",
+   "address": "0x19384d4",
+   "length": 4,
+   "soft": 1
+  },
+  {
+   "name": "screen0",
+   "address": "0x1faca4",
+   "length": 4,
+   "soft": 1
+  },
+  {
+   "name": "screen1",
+   "address": "0xf82404",
+   "length": 4,
+   "soft": 1
+  },
+  {
+   "name": "screen2",
+   "address": "0xf82408",
+   "length": 4,
+   "soft": 1
+  },
+  {
+   "name": "screen3",
+   "address": "0xf8247c",
+   "length": 4,
+   "soft": 1
+  },
+  {
+   "name": "screen4",
+   "address": "0xf82480",
+   "length": 4,
+   "soft": 1
+  },
+  {
+   "name": "screen5",
+   "address": "0xf824f4",
+   "length": 4,
+   "soft": 1
+  },
+  {
+   "name": "screen6",
+   "address": "0xf824f8",
+   "length": 4,
+   "soft": 1
+  }
+ ],
+ "lm_sites": 6,
+ "av_sites": 101,
+ "av_guards": [
+  "unit_rows_0_2",
+  "clip_rows_2_7",
+  "descriptors_7_10"
+ ],
+ "dump_ranges": [
+  [
+   "shadow",
+   "0x1302000",
+   1
+  ],
+  [
+   "matrix",
+   "0x11ee000",
+   2
+  ],
+  [
+   "sizetable",
+   "0x1938000",
+   1
+  ],
+  [
+   "records",
+   "0x24db000",
+   5
+  ],
+  [
+   "kprint",
+   "0xe0000",
+   32
+  ],
+  [
+   "bootlog",
+   "0xc0000",
+   8
+  ],
+  [
+   "dmmglobals",
+   "0x1971000",
+   2
+  ],
+  [
+   "dmmrecs",
+   "0x2481000",
+   2
+  ],
+  [
+   "sensorobject",
+   "0x1790000",
+   1
+  ],
+  [
+   "resizestate",
+   "0x194f000",
+   2
+  ],
+  [
+   "resizework",
+   "0x1626000",
+   1
+  ],
+  [
+   "paneltype",
+   "0x1a1c000",
+   1
+  ],
+  [
+   "display0",
+   "0x1fa000",
+   1
+  ],
+  [
+   "display1",
+   "0xf82000",
+   1
+  ]
+ ],
+ "designs": {
+  "ogsq_a1m2_v1": "9d79f714d4c050189bd5ed3521c7ef3779e8a59a76bc75024d780d24d781c5c9",
+  "outsz2560_a1m2_v1": "095daddc117833e2a6704164685e2a0a1dade137c5d7f0fa448e1f1fec360bdb",
+  "ogfile2560_hs_s_a1m2_v2": "df95a8a262f8c39bba12e5d0f6ff73e6a64e477de1307f73f96867f2e30e84b0",
+  "lcdfill_a1m2_v1": "d889dff7cca3e55a4a6e5977909ce4e27fffcb873e82832d0eccb129ff930c43",
+  "ogh2880_a1m2_v1": "42338de32da174309be3e4967d87873bdc5d00f92100b8ad3e2e064909c46c28"
+ }
+}
