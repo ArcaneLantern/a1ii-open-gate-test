@@ -27,7 +27,7 @@ DES = ROOT / "modding/designs"
 sys.path.insert(0, str(ROOT / "build"))
 
 BASE = 0x108000
-LABEL = "a1m2read_v1"
+LABEL = "a1m2read_v2"                                 # v2 (kit v2): + the resize view page, the margin page, the fehold word
 CP_LO, CP_HI = 0xC0000, 0x2700000                     # coprocessor addresses a read may have: its logs, image and RAM tables
 AVCAM_PHYS, AVCAM_RESERVE = 0x401000000, "@0x401000000"   # kemco: memrsv=0x01000000@0x401000000:ex, as the A7 IV
 ID_FILES = {"/libmpr.so": "nflasha15/lib/libmpr.so", "/libsencore.so": "nflasha15/lib/libsencore.so", "/libJiritsu.so": "nflasha15/lib/libJiritsu.so"}
@@ -39,7 +39,7 @@ ID_PAGES = (0x128000, 0x279000, 0x501000, 0xA0D000)
 MATRIX, MATRIX_ROWS, MROW, COLMAP, IDS, NMODES = 0x11EE600, 100, 32, 0x11EF2A0, 0xE9EB40, 44
 RECS, REC = 0x24DBA14, 0x170
 SIZE_TABLE = 0x1938488
-DESIGNS = ("ogsq_a1m2_v1", "outsz2560_a1m2_v1", "ogfile2560_hs_s_a1m2_v2", "lcdfill_a1m2_v1", "ogh2880_a1m2_v1")
+DESIGNS = ("ogsq_a1m2_v1", "outsz2560_a1m2_v1", "ogfile2560_hs_s_a1m2_v2", "lcdfill_a1m2_v1", "ogh2880_a1m2_v1", "fehold_a1m2_v1")
 UNIT, DESC, DSIZE, CLIP, NDESC = 0x3AB234, 0x3AB2D4, 0x90, 0x3A9158, 686    # build_ogfile.OTHER_BUILDS["a1m2_400"] (A1M2_PORT_ENCODER.md)
 PANEL_REAR, PANEL_EVF = 0x1A1C638, 0x1A1C768          # rear panel type byte (3 = 3:2 expected) and the viewfinder's (A1M2_PORT_SCREEN.md)
 # The pages the dump reads beyond the display pages (taken from the screen design's sites and guards below, one page each):
@@ -50,7 +50,10 @@ DUMP_FIXED = (("shadow", 0x1302000, 1), ("matrix", 0x11EE000, 2), ("sizetable", 
               # sizes) and the resize working structure
               ("resizestate", 0x194F000, 2), ("resizework", 0x1626000, 1),
               # the panel records: rear panel type byte 0x1a1c638 (3 = 3:2), viewfinder 0x1a1c768 (build/build_lcd_a1m2.py)
-              ("paneltype", 0x1A1C000, 1))
+              ("paneltype", 0x1A1C000, 1),
+              # kit v2: the resize set-up's view (0x16237b0, 0x54 bytes: flag +5, crop +0x38, first-scaler size +0x3c, output +0x40; the
+              # caller 0x527062 passes it to 0x521438) and the margin table (0x1951514 +0xa..+0x18, its switch word 0x1951e58)
+              ("view", 0x1623000, 1), ("margin", 0x1951000, 1))
 
 
 def c_bytes(b):
@@ -77,7 +80,7 @@ def main():
     cp = (EX / "nflasha8/cpapp-b.bin").read_bytes()
     av = (EX / "nflasha3/av-cam.bin").read_bytes()
     lm = (EX / "nflasha15/lib/libmpr.so").read_bytes()
-    og, oz, fl, sc, rr = (design(n) for n in DESIGNS)
+    og, oz, fl, sc, rr, fh = (design(n) for n in DESIGNS)
     sha_cp = hashlib.sha256(cp).hexdigest()
     assert og["artifact_sha256"] == sha_cp == rr["artifact_sha256"] and og["build"] == "a1m2_400"
     assert fl["artifact_sha256"] == {"libmpr.so": hashlib.sha256(lm).hexdigest(), "av-cam.bin": hashlib.sha256(av).hexdigest()}
@@ -119,6 +122,10 @@ def main():
         if BASE <= a < BASE + len(cp):
             assert cp[a - BASE:a - BASE + 4] == old
         sites.append((f"screen{k}", a, old, bytes.fromhex(s["new"]), 1))
+    for s in fh["sites"]:                                 # soft (kit v2): the code word F16 writes (resize set-up 0x521438: the override skipped)
+        a, old = int(s["ram_address"], 16), bytes.fromhex(s["old"])
+        assert cp[a - BASE:a - BASE + 4] == old
+        sites.append(("fehold", a, old, bytes.fromhex(s["new"]), 1))
     pages = {x & ~0xFFF for _, a, o, _, _ in sites for x in (a, a + len(o) - 1) if a < BASE + len(cp)}
     assert not any(p in pages for p in ID_PAGES), "an identity page holds a design site"
     rows = [f"    {{{a:#x}, {c_bytes(hashlib.sha256(cp[a - BASE:a - BASE + 4096]).digest())}}}," for a in ID_PAGES]

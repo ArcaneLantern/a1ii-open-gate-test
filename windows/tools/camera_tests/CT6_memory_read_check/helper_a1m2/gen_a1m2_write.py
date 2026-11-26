@@ -7,8 +7,10 @@ MULTI_REC switch), helper_fx3/gen_fx3_write.py (the XAVC S-I step, levels 19/20 
 appFw.so, levels 19/20 with MP_LIB "appFw.so"). The A1 II's designs (modding/A1M2_PORT.md and its part notes):
   expected_sites_ogsq_a1m2_v1.h              levels 5/6 (L5/L6): 13 table/record sites and the four stored records (0x820, 0x2820, 0x8c0, 0x28c0)
   expected_sites_ogh2880_a1m2_v1.h           levels 5/6 (R5/R6): the real-rows alternative, the same sites with other record bytes
+  expected_sites_fhband_a1m2_v1.h            levels 5/6 (B5/B6, kit v2 test0): the sensor window at full height only (read-out span, 3 matrix cells, 4 stored records)
   expected_words_outsz2560_a1m2_v1.h         levels 16/17 (L16/L17): the output-size word and its guards
   expected_words_lcdfill_a1m2_v1.h           levels 16/17 (S16/S17): the rear screen filled (fit word) and the three frame rectangles
+  expected_words_fehold_a1m2_v1.h            levels 16/17 (F16/F17, kit v2): one code word, the resize set-up keeps the records' first-scaler size
   expected_mp_ogfile2560_hs_s_a1m2_v2.h      levels 19/20 (L19/L20): encoder side with the two MP4 header heights
   expected_mp_ogfile2560_hs_s_a1m2_v1.h      levels 19/20 (N19): the same without the heights (--no-meta)
   expected_mp_ogfilesi2560_a1m2_v1.h         levels 19/20 (I19/I20): XAVC S-I 4K at 3840x2560
@@ -62,7 +64,7 @@ def sites_header(name):
             out.append("static const u8 site%d_%s[%d] = { %s };" % (k, tag, len(data), hx(data)))
         rows.append("    { 0x%x, %d, site%d_old, site%d_new, 0, 0 }," % (a, len(old), k, k))
     assert all(a + len(o) <= b for (a, o, _), (b, _, _) in zip(sites, sites[1:])), "sites overlap"
-    assert len(sites) == 13
+    assert len(sites) == {"fhband_a1m2_v1": 4}.get(name, 13)          # the band diagnostic (B5): the read-out span + 3 matrix cells
     squeeze = bool(d["stored_record_extra"])
     srs = d["stored_records"]
     offs = None
@@ -104,9 +106,16 @@ def sites_header(name):
     return len(sites), len(offs), [hex(m) for m in MODES], hashlib.sha256((DES / f"{name}.json").read_bytes()).hexdigest()[:16]
 
 
+# fehold_a1m2_v1 (kit v2): one CODE word of the resize set-up 0x521438, the branch over the A1 II's first-scaler override; its guards are
+# the 16 code bytes before and after (build/build_ram_words_a1m2.py --fehold, which decodes them)
+FEHOLD_SITE, FEHOLD_GUARDS = (0x521760, 0x521764), ((0x521750, 0x521760), (0x521764, 0x521774))
+
+
 def regions(name):
     if name == "outsz2560_a1m2_v1":
         return (SIZE_TABLE,), ()
+    if name == "fehold_a1m2_v1":
+        return (FEHOLD_SITE,), FEHOLD_GUARDS
     r = design(name)["word_regions"]                   # lcdfill_a1m2_v1 (build/build_lcd_a1m2.py): sites only in FIT and FRAMES
     to = lambda p: (int(p[0], 16), int(p[1], 16))
     return (to(r["FIT"]),) + tuple(to(p) for p in r["FRAMES"]), tuple(to(p) for p in r["guard_only"])
@@ -259,9 +268,9 @@ def mp_appfw_header(name="lcdcycle_a1m2_v1"):
 
 
 if __name__ == "__main__":
-    for n in ("ogsq_a1m2_v1", "ogh2880_a1m2_v1"):
+    for n in ("ogsq_a1m2_v1", "ogh2880_a1m2_v1", "fhband_a1m2_v1"):
         print("sites header %s:" % n, sites_header(n))
-    for n in ("outsz2560_a1m2_v1", "lcdfill_a1m2_v1"):
+    for n in ("outsz2560_a1m2_v1", "lcdfill_a1m2_v1", "fehold_a1m2_v1"):
         print("words header %s:" % n, words_header(n))
     for n in ("ogfile2560_hs_s_a1m2_v2", "ogfile2560_hs_s_a1m2_v1", "ogfilesi2560_a1m2_v1"):
         print("mp header", n, mp_header(n))

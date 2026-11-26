@@ -10,7 +10,7 @@ A7S III kit's C3-routine cases (helper_s3/emu_s3_write.py):
     ids, 0, records} -> the 0x170-byte stored records; the four modes the designs change (0x820, 0x2820, 0x8c0, 0x28c0) hold the A1 II's
     emulated stock records of one timing system (build/emu_drvparam.py a1m2_400 with the 60 Hz or the 50 Hz table), the others a filler.
     readcheck.c's MULTI_REC path must pick the variant every record holds and refuse a camera whose records agree on none;
-  - L16/L17, S16/S17: the movie size table as the A1 II's set-up fills it (build/emu_size_table.py a1m2_400), and the loaded image for the
+  - L16/L17, S16/S17, F16/F17 (kit v2: one code word of the loaded image): the movie size table as the A1 II's set-up fills it (build/emu_size_table.py a1m2_400), and the loaded image for the
     screen words;
   - L19/L20, N19, I19/I20: av-cam.bin at its physical address and libmpr.so in the process's own mapping;
   - C19/C20: appFw.so's first mapping (0x4d0e000 bytes: the r-x segment's whole pages, the cave in its zero tail) in the process.
@@ -156,14 +156,14 @@ def main():
         return True
 
     # ---- L5 / L6 (ogsq_a1m2_v1) and R5 / R6 (ogh2880_a1m2_v1): 13 table/record sites and the four stored records, NTSC or PAL
-    des = {"L": design("ogsq_a1m2_v1"), "R": design("ogh2880_a1m2_v1")}
+    des = {"L": design("ogsq_a1m2_v1"), "R": design("ogh2880_a1m2_v1"), "B": design("fhband_a1m2_v1")}     # B: kit v2's test0 (B5/B6)
 
     def recs_of(d):
         return {s: {int(m, 16): (RECS + v["index"] * REC, bytes.fromhex(v[s]["stock"]), bytes.fromhex(v[s]["design"])) for m, v in d["stored_records"].items()}
                 for s in ("ntsc", "pal")}
     recs = {k: recs_of(d) for k, d in des.items()}
     for s in ("ntsc", "pal"):                                       # the two designs start from the same stock records
-        assert all(recs["L"][s][m][1] == recs["R"][s][m][1] for m in recs["L"][s])
+        assert all(recs["L"][s][m][1] == recs["R"][s][m][1] == recs["B"][s][m][1] for m in recs["L"][s])
 
     def table_allowed(d):
         al = {}
@@ -196,17 +196,18 @@ def main():
     def state(mem, kind, system):
         vals = [(mem.read(a, 1)[0], pr) for a, pr in allowed_for(kind, system).items()]
         return "stock" if all(v == pr[0] for v, pr in vals) else "new" if all(v == pr[1] for v, pr in vals) else "mixed"
-    for kind, (sa, sb), title in (("L", ("L5", "L6"), "ogsq_a1m2_v1"), ("R", ("R5", "R6"), "ogh2880_a1m2_v1")):
+    for kind, (sa, sb), title in (("L", ("L5", "L6"), "ogsq_a1m2_v1"), ("R", ("R5", "R6"), "ogh2880_a1m2_v1"), ("B", ("B5", "B6"), "fhband_a1m2_v1")):
         La, Lb = lib(sa), lib(sb)
+        nsites = len(des[kind]["patches"])
         for system in ("ntsc", "pal"):
             al = allowed_for(kind, system)
             mem = camera(system)
             before = mem.snapshot()
             r, t = go(La, mem, al)
             name = "NTSC (60 Hz)" if system == "ntsc" else "PAL (50 Hz)"
-            ok(not r.bad and "DONE: all 17 sites hold the target bytes (apply)" in t and f"the stored records are the {name} variant" in t
+            ok(not r.bad and f"DONE: all {nsites + 4} sites hold the target bytes (apply)" in t and f"the stored records are the {name} variant" in t
                and state(mem, kind, system) == "new" and changed_only(mem, before, al),
-               f"{sa} ({title}) on a stock A1 II ({system}): 13 sites and the four stored records new ({name} variant), nothing else changed ({r.n_writes} line writes)")
+               f"{sa} ({title}) on a stock A1 II ({system}): {nsites} sites and the four stored records new ({name} variant), nothing else changed ({r.n_writes} line writes)")
             r, t = go(La, mem, al)
             ok(not r.bad and "NOTHING TO DO" in t and r.n_writes == 0, f"{sa} again ({system}): nothing to do, no write")
             r, t = go(Lb, mem, al)
@@ -220,7 +221,7 @@ def main():
         r, t = go(La, mem, {**al, **allowed_for(kind, "pal")})
         ok(not r.bad and r.n_writes == 0 and "hold neither timing variant" in t and changed_only(mem, before, {}),
            f"{sa} with one record of the PAL variant among NTSC ones: refused, nothing is written")
-        for lose in (1, 6, 9, 17):
+        for lose in ((1, 6, 9, 17) if kind != "B" else (1, 3, 5, 8)):
             mem = camera()
             before = mem.snapshot()
             r, t = go(La, mem, al, lose=lose)
@@ -229,12 +230,26 @@ def main():
     al = allowed_for("L", "ntsc")
     L5, L6, R5, R6 = lib("L5"), lib("L6"), lib("R5"), lib("R6")
     # the default and the real-rows step against each other: neither may write over the other's state
-    for a_lib, a_kind, b_lib, b_label in ((L5, "L", R5, "R5"), (R5, "R", L5, "L5"), (R5, "R", L6, "L6"), (L5, "L", R6, "R6")):
+    B5, B6 = lib("B5"), lib("B6")
+    for a_lib, a_kind, b_lib, b_label in ((L5, "L", R5, "R5"), (R5, "R", L5, "L5"), (R5, "R", L6, "L6"), (L5, "L", R6, "R6"),
+                                          (B5, "B", L5, "L5"), (B5, "B", R5, "R5"), (L5, "L", B5, "B5"), (R5, "R", B5, "B5"),
+                                          (B5, "B", L6, "L6")):
         mem = camera()
         go(a_lib, mem, allowed_for(a_kind, "ntsc"))
         before = mem.snapshot()
-        r, t = go(b_lib, mem, {**allowed_for("L", "ntsc"), **allowed_for("R", "ntsc")})
-        ok(not r.bad and r.n_writes == 0 and changed_only(mem, before, {}), f"{b_label} on a camera holding {'L5' if a_kind == 'L' else 'R5'}'s state: nothing is written")
+        r, t = go(b_lib, mem, {**allowed_for("L", "ntsc"), **allowed_for("R", "ntsc"), **allowed_for("B", "ntsc")})
+        ok(not r.bad and r.n_writes == 0 and changed_only(mem, before, {}),
+           f"{b_label} on a camera holding {dict(L='L5', R='R5', B='B5')[a_kind]}'s state: nothing is written")
+    # B6 is test0's put back only. On a camera holding L5's state it finds its own 4 sites and L5's records at its 7 record offsets in its target
+    # state (L5 wrote the same values there) and puts back exactly those, nothing else: the README says to use open_gate_putback or a cold
+    # boot after anything but test0.
+    mem = camera()
+    go(L5, mem, allowed_for("L", "ntsc"))
+    before = mem.snapshot()
+    r, t = go(B6, mem, {**allowed_for("L", "ntsc"), **allowed_for("B", "ntsc")})
+    own = allowed_for("B", "ntsc")
+    ok(not r.bad and changed_only(mem, before, own) and all(mem.read(a, 1)[0] == pr[0] for a, pr in own.items()),
+       "B6 on a camera holding L5's state: it changes only its own sites (back to stock), nothing of L5's other sites (use open_gate_putback after L5)")
     mem = camera()
     mem.write(int(des["L"]["patches"][4]["addr"], 16) + 6, b"\x55")
     r, t = go(L5, mem, al)
@@ -290,7 +305,7 @@ def main():
         for k, (w, h, mid) in enumerate(srows):
             m.write(t_ + 8 * k, struct.pack("<2HI", w, h, mid))
         return m
-    for name, s_apply, s_back in (("outsz2560_a1m2_v1", "L16", "L17"), ("lcdfill_a1m2_v1", "S16", "S17")):
+    for name, s_apply, s_back in (("outsz2560_a1m2_v1", "L16", "L17"), ("lcdfill_a1m2_v1", "S16", "S17"), ("fehold_a1m2_v1", "F16", "F17")):
         dw = design(name)
         w_allowed = {}
         for s in dw["sites"]:
@@ -333,6 +348,7 @@ def main():
                         ("FX30 kit L16 (outsz2560_fx30_v1)", HERE.parent / "helper_fx30/libJit_fx30_L16.so"),
                         ("FX2 kit S16 (lcd32dsq_fx2_v1)", HERE.parent / "helper_fx2/libJit_fx2_S16.so"),
                         ("FX2 kit L16 (outsz2560_fx2_v1)", HERE.parent / "helper_fx2/libJit_fx2_L16.so"),
+                        ("FX2 kit F16 (fehold_fx2_v1)", HERE.parent / "helper_fx2/libJit_fx2_F16.so"),
                         ("A7 IV level 16 (outsz2560_v1)", HERE.parent / "helper/libJit_level16_outsz2560_v1.so"),
                         ("A7 IV level 16 (lcdfill_v2)", HERE.parent / "helper/libJit_level16_lcdfill_v2.so")):
         if path.is_file():

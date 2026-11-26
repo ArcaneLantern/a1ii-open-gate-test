@@ -1,5 +1,5 @@
 @echo off
-rem A1 II (firmware 4.00): apply only the four open-gate steps (sensor, output size, encoder, XAVC S-I), without the rear-screen and C3 steps.
+rem A1 II (firmware 4.00): put back test0 (B6). After any other test use open_gate_putback or a cold boot.
 rem WRITES into the camera's memory (not firmware, not settings). A cold boot (battery out for 10 seconds) returns it to stock; whether the power switch alone does on the A1 II is not known.
 cd /d "%~dp0"
 if not exist ".venv\Scripts\python.exe" (
@@ -7,6 +7,6 @@ if not exist ".venv\Scripts\python.exe" (
   pause
   exit /b 1
 )
-".venv\Scripts\python.exe" -I -B "tools\camera_tests\CT6_memory_read_check\a1m2_apply.py" apply --no-screen %*
+".venv\Scripts\python.exe" -I -B "tools\camera_tests\CT6_memory_read_check\a1m2_apply.py" putback-test0 %*
 echo.
 pause

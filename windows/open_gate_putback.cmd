@@ -1,5 +1,5 @@
 @echo off
-rem A1 II (firmware 4.00): put every step back to stock (after open_gate_apply, _no_screen, _no_meta or _no_si).
+rem A1 II (firmware 4.00): put every step back to stock (after test1, test3 or kit v1's apply; steps that find stock say NOTHING TO DO).
 rem WRITES into the camera's memory (not firmware, not settings). A cold boot (battery out for 10 seconds) returns it to stock; whether the power switch alone does on the A1 II is not known.
 cd /d "%~dp0"
 if not exist ".venv\Scripts\python.exe" (

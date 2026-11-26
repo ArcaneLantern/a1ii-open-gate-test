@@ -290,14 +290,61 @@ def dmmwb(cfg, rows, pitch, name, write, force):
     return design
 
 
+def fehold():
+    """fehold_a1m2_v1 (kit v2, 2026-11-26): one code word of the A1 II's resize set-up 0x521438 so that the first-scaler size it hands the
+    second scaler stays the one the mode's records give (the FX2's fehold_fx2_v1, F1019, on the A1 II's own form).
+
+    The A1 II reads the records' first-scaler size (0x7cadca -> view +0x3c/+0x3e), then, when view byte +5 is set (0x521748 ldrb sl), calls
+    0xbceed4: W', H' = output size / (1 - margin), each capped at the crop (+0x38/+0x3a), and stores both when the view's width is below W'
+    (0x52177c..0x52178e). The site: 0x521762 `beq 0x521790` (taken when the flag is 0) becomes `b 0x521790`, so the call and the stores are
+    always skipped (the A7 IV's 0x4455a4 has no such step). The word holds the end of `cmp.w sl, #0` (kept) and the branch."""
+    name = "fehold_a1m2_v1"
+    md = capstone.Cs(capstone.CS_ARCH_ARM, capstone.CS_MODE_THUMB)
+    ins = list(md.disasm(IMG[0x521748 - B:0x521792 - B], 0x521748))
+    text = {i.address: (i.mnemonic, i.op_str) for i in ins}
+    assert text[0x521748] == ("ldrb.w", "sl, [r4, #5]") and text[0x52175E] == ("cmp.w", "sl, #0") and text[0x521762] == ("beq", "#0x521790"), text
+    assert text[0x521778] == ("bl", "#0xbceed4") and text[0x52175A] == ("bl", "#0x7cadca")
+    assert [text[a] for a in (0x521786, 0x52178e)] == [("strhlo", "r0, [r4, #0x3c]"), ("strhlo", "r0, [r4, #0x3e]")]
+    assert text[0x521790] == ("ldr", "r0, [r5, #0x20]")
+    old = IMG[0x521760 - B:0x521764 - B]
+    new = old[:2] + struct.pack("<H", 0xE000 | ((0x521790 - (0x521762 + 4)) // 2))
+    assert old.hex() == "000f15d0" and new.hex() == "000f15e0", (old.hex(), new.hex())
+    chk = [(i.mnemonic, i.op_str) for i in md.disasm(IMG[0x52175E - B:0x521760 - B] + new, 0x52175E)]
+    assert chk == [("cmp.w", "sl, #0"), ("b", "#0x521790")], chk
+    sites = [{"ram_address": hex(0x521760), "old": old.hex(), "new": new.hex(),
+              "note": "0x52175e cmp.w sl, #0 (second half kept); 0x521762 beq 0x521790 -> b 0x521790: the call of 0xbceed4 (output / (1 - margin), "
+                      "capped at the crop) and the two stores of its result (view +0x3c, +0x3e) are skipped"}]
+    guards = [{"ram_address": hex(0x521750), "bytes": IMG[0x521750 - B:0x521760 - B].hex(), "note": "the 16 code bytes before the site (the call of 0x7cadca)"},
+              {"ram_address": hex(0x521764), "bytes": IMG[0x521764 - B:0x521774 - B].hex(), "note": "the 16 code bytes after the site (the override call's arguments)"}]
+    res = {"design": name, "build": BUILD, "camera": "ILCE-1M2 (A1 II), firmware 4.00",
+           "title": "Resize set-up 0x521438: keep the first-scaler size the records give (skip the A1 II's 0xbceed4 override) (A1 II 4.00)",
+           "kind": "ram_words", "artifact": "cpapp-b.bin, the loaded image in coprocessor RAM: a CODE word", "emulated_image_sha256": SHA,
+           "generated_by": "build/build_ram_words_a1m2.py --fehold",
+           "status": "read from the A1 II's code and emulated (build/emu_rcinput_a1m2.py); never written on an A1 II. The FX2's fehold_fx2_v1 is the same change",
+           "summary": {"goes_with": ["ogsq_a1m2_v1", "outsz2560_a1m2_v1"], "not_needed_with": ["ogh2880_a1m2_v1 (its records give the crop size)"]},
+           "sites": sites, "guards": guards,
+           "precondition": "write it with the camera in stills, before the first movie entry",
+           "restore": "write the old word back, or cold boot",
+           "not_shown": ["anything on an A1 II", "that a code word written this way is taken up at once (0x521438 runs on each movie set-up)",
+                         "the margin table 0x1951514 on a camera (read by the v2 dump)"]}
+    dd = ROOT / "modding/designs"
+    (dd / f"{name}.json").write_text(json.dumps(res, indent=1) + "\n", encoding="utf8", newline="\n")
+    (dd / f"{name}_pokes_ram.txt").write_text("".join(f"{x['ram_address']} {x['new']}\n" for x in sites), encoding="utf8", newline="\n")
+    print(f"{name}: site {sites[0]['ram_address']} {sites[0]['old']} -> {sites[0]['new']}; guards {[g['ram_address'] for g in guards]}")
+
+
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--fehold", action="store_true", help="write fehold_a1m2_v1 only")
     ap.add_argument("--dmmwb", type=int, metavar="ROWS")
     ap.add_argument("--pitch", type=int, default=4440)
     ap.add_argument("--name", default="dmmwb_a1m2_v1")
     ap.add_argument("--write", action="store_true")
     ap.add_argument("--force", action="store_true")
     a = ap.parse_args()
+    if a.fehold:
+        fehold()
+        return
     E.use_build(BUILD)
     cfg = P.Config(P.find_file(BUILD), BUILD)
     if a.dmmwb:

@@ -38,8 +38,8 @@ import ct6_level1_run as R  # noqa: E402
 
 FIRMWARE, MODEL, BUILD = "4.00", "ILCE-1M2", "a1m2_400"
 S3 = HERE / "helper_a1m2"                      # this kit's folder (the name S3 is kept from s3_run.py)
-PINS = {"check": ("libJit_a1m2_check.so", "cc4bbcac0df1a71be64840b43d6a45895791be8147bba7f6bed1246ecd2895a1"),      # a1m2read_v1 (2026-11-26)
-        "dump": ("libJit_a1m2_dump.so", "bef84fc975cf7775b51167634857f26bb61de46bfe791185f80e91e1eb8b4e83")}
+PINS = {"check": ("libJit_a1m2_check.so", "822d24f542e0479fc03aa0f5f16066e9d194cd5b72a169a7a2a39aa2a2de0aee"),      # a1m2read_v2 (kit v2, 2026-11-26)
+        "dump": ("libJit_a1m2_dump.so", "e9d50ac50158ad35ea43fdd64da3a6b9fc912bda90724bdb56889b014e5e5718")}
 LEVELS = {"check": 101, "dump": 102}              # numbers outside the A7 IV runner's own levels: none of its level-specific code runs
 # THE WRITE STEPS. Each is one library built from the A7 IV helper's write code with this camera's tables (helper_a1m2/build_a1m2_write.sh).
 # They change the running camera's memory until a cold boot. They are run through a1m2_apply.py, never by a launcher of the read-only kit.
@@ -53,8 +53,20 @@ WRITE_STEPS = {
     "R5": ("libJit_a1m2_R5.so", "fcb27cdbf129fb4f1f411f3dfee03b322c8751748d1b11354671e6630ee82ae6",
            "apply the sensor-side design ogh2880_a1m2_v1 (the same full-height window; the first scaler keeps every row: 4320x2880 front end)"),
     "R6": ("libJit_a1m2_R6.so", "933e176ac348e76b6f4d2553c9590e67fc24d5e674d4339f8d159b1083ab6c24", "put back the sensor-side design ogh2880_a1m2_v1"),
+    # B5/B6 (kit v2, test0): fhband_a1m2_v1, the diagnostic: the sensor's window registers at full height and the read-out length, every
+    # other table and both picture-record pairs stock (the first stage keeps its stock 2,446 rows and takes the first lines the sensor sends):
+    # the framing moves up by ~9% if the sensor reads beyond its 16:9 band, and stays as stock if it does not.
+    "B5": ("libJit_a1m2_B5.so", "f4b7f029629a5d380d3b2390090aef4daace205b20f8e7a96a36edac22cbe7c8",
+           "apply the diagnostic sensor step fhband_a1m2_v1 (the sensor window at full height, read-out length; everything else stock: test0)"),
+    "B6": ("libJit_a1m2_B6.so", "6b42f041650008699bce5b17ef5a829485e22746c1d4031f6f1156418a4f4fa6", "put back the diagnostic sensor step fhband_a1m2_v1"),
     "L16": ("libJit_a1m2_L16.so", "2f09b46b607794fae3479d9bef9f8aad228546012ab145a859025f3a74acbfba", "apply the output size outsz2560_a1m2_v1 (one word)"),
     "L17": ("libJit_a1m2_L17.so", "2f5516ddd577bcc679120a4fef68fe3acc6ff3c292ab28daa238c9c031b56ab4", "put back the output size outsz2560_a1m2_v1"),
+    # F16/F17 (kit v2): fehold_a1m2_v1, one code word of the resize set-up 0x521438: the first-scaler override 0xbceed4 is never applied, so the
+    # second scaler always gets the size the picture records give (the A7 IV's behaviour). Emulated: the override does not fire in the first
+    # run's state at margins 0..0x3000 (evidence/a1m2/rcinput_emu_a1m2.json); F16 makes that certain whatever the margin.
+    "F16": ("libJit_a1m2_F16.so", "bd38f3d9ef71ff426f2e9c85394613cba7b77cca8f0483b8450a0bb0cc018d90",
+            "apply the code word fehold_a1m2_v1 (the resize set-up keeps the first-scaler size the records give: one word)"),
+    "F17": ("libJit_a1m2_F17.so", "2d3c1ef67737264768947e3791d40106a466f5fd3b898ad8ed1e5c442abe9211", "put back the code word fehold_a1m2_v1"),
     # L19: the encoder side with the MP4 header heights (ogfile2560_hs_s_a1m2_v2: tkhd, stsd and Sony's PROF say 3840x2560). L20 puts back
     # either version. N19 = the same without the heights (apply --no-meta).
     "L19": ("libJit_a1m2_L19.so", "88c96675d996b9c1c4ef54dcbf94bde59e2fc05a848bf6f5f05630ca33eb4d2e", "apply the encoder-side design ogfile2560_hs_s_a1m2_v2 (101 + 4 sites, and the MP4 headers say 3840x2560: 2 more)"),
@@ -71,7 +83,7 @@ WRITE_STEPS = {
     "C20": ("libJit_a1m2_C20.so", "c3167a72f599033619ca3171c8d77822632934833e158c1d1f78d2e1f7a78c38", "put back the C3 preview routine lcdcycle_a1m2_v1"),
 }
 PINS.update({k: v[:2] for k, v in WRITE_STEPS.items()})
-LEVELS.update({k: {"L": 200, "S": 300, "C": 400, "N": 500, "I": 700, "R": 800}[k[0]] + int(k[1:]) for k in WRITE_STEPS})
+LEVELS.update({k: {"L": 200, "S": 300, "C": 400, "N": 500, "I": 700, "R": 800, "F": 900, "B": 1000}[k[0]] + int(k[1:]) for k in WRITE_STEPS})
 WHICH = "check"
 DESIGN_MODES = ("0x820", "0x2820", "0x8c0", "0x28c0")
 
@@ -234,6 +246,18 @@ def decode_pages(pages):
     t = mem(int(ref["size_table_address"], 16), 128)
     if t is not None:
         out["size_table"] = [list(struct.unpack_from("<HHI", t, 8 * k)) for k in range(16)]
+    # kit v2: the resize set-up's view 0x16237b0 (0x521438 fills it; the caller 0x527062): flag +5 (the override is called when set), crop
+    # +0x38/+0x3a, first-scaler size +0x3c/+0x3e (what the second scaler is told it gets), output +0x40/+0x42, drive mode +0x44; and the margin
+    # table 0x1951514 +0xa..+0x18 with its switch word 0x1951e58 (non-zero: margin 0)
+    v = mem(0x16237B0, 0x54)
+    if v is not None:
+        hh = lambda o: list(struct.unpack_from("<HH", v, o))
+        out["resize_view"] = {"flag_override": v[5], "flags_0_6": list(v[:7]), "crop": hh(0x38), "first_scaler": hh(0x3C), "output": hh(0x40),
+                              "first_stage": hh(0x14), "mode": hex(struct.unpack_from("<I", v, 0x44)[0])}
+    mg = mem(0x1951514, 0x1A)
+    sw = mem(0x1951E58, 4)
+    if mg is not None and sw is not None:
+        out["resize_margin"] = {"switch_word": struct.unpack("<I", sw)[0], "words_0xa_0x18": list(struct.unpack_from("<8H", mg, 0xA))}
     # The resize module: its A1 II addresses are weak (port_addr from the FX2's, 1-2 votes): the decoder searches the pages for known sizes.
     st, seen = {}, {}
     pairs = {(4320, 2880), (4320, 2430), (4332, 2896), (4332, 2446), (4320, 2442), (4320, 2446), (3840, 2560), (3840, 2160), (2204, 2442), (2204, 2446),
@@ -296,7 +320,7 @@ def run_helper(data):
     try:
         import emu_a1m2
     except Exception:
-        text = "a1m2read a1m2read_v1 %s for ILCE-1M2 4.00; read-only\n== file /proc/version\nLinux (simulated)\n\n== end 18 bytes\n== summary\nVERDICT READY (canned)\n== done\n" % WHICH
+        text = "a1m2read a1m2read_v2 %s for ILCE-1M2 4.00; read-only\n== file /proc/version\nLinux (simulated)\n\n== end 18 bytes\n== summary\nVERDICT READY (canned)\n== done\n" % WHICH
         return text.encode(), "canned"
     r, text = emu_a1m2.run(bytes(data))
     if r.bad:
@@ -347,8 +371,8 @@ def selftest(lib):
     else:
         check(f.get("ready") and not f.get("identity_differs"), "normal run: the %s helper reports a stock 4.00 camera as READY" % sim.how)
     if sim.how == "emulated":
-        check(len(f["coprocessor_sites"]) == len(expected()["cp_sites"]) == 27 and f["avcam_stock"] == 101 and len(f["libmpr_sites"]) == expected()["lm_sites"] == 6,
-              "normal run: every coprocessor site, 6 libmpr (4 rows, 2 MP4 header heights) and 101 av-cam sites are reported")
+        check(len(f["coprocessor_sites"]) == len(expected()["cp_sites"]) == 28 and f["avcam_stock"] == 101 and len(f["libmpr_sites"]) == expected()["lm_sites"] == 6,
+              "normal run: every coprocessor site (28: kit v2 adds the F16 word), 6 libmpr (4 rows, 2 MP4 header heights) and 101 av-cam sites are reported")
         check(f.get("stored_records") == {m: "stock (NTSC)" for m in DESIGN_MODES}, "normal run: the four stored records read as stock (NTSC)")
         if WHICH == "dump":
             d = f.get("decoded", {})
@@ -416,6 +440,29 @@ def report(session, facts, which):
                          % (m, v["state"], v["height"], v["band_row"], v["pdaf_rows"], v["lc"], v["readout_line_periods"], v["sampling_ratio"]))
         if d.get("size_table"):
             lines.append("movie size table: " + "; ".join("%dx%d id %#x" % tuple(r) for r in d["size_table"]))
+        rv = d.get("resize_view")
+        if rv:
+            st = {s["name"]: s["state"] for s in f["coprocessor_sites"]}
+            rec = st.get("record_8c0_left", "")
+            mat = st.get("matrix_half", "")
+            if rec.startswith("TARGET") or rec.startswith("STOCK"):
+                deliver = [4320, 2430]                 # stock and ogsq_a1m2_v1: the first scaler gives 4320 x 2430
+            elif rec.startswith("OTHER") and mat.startswith("TARGET"):
+                deliver = [4320, 2880]                 # ogh2880_a1m2_v1 (real rows): 4320 x 2880
+            else:
+                deliver = None
+            agree = deliver is not None and rv["first_scaler"] == deliver
+            lines.append("resize view 0x16237b0 (kit v2): override flag %d, crop %dx%d, first-scaler size %dx%d, output %dx%d, mode %s"
+                         % (rv["flag_override"], *rv["crop"], *rv["first_scaler"], *rv["output"], rv["mode"]))
+            lines.append("  the picture records deliver %s: %s" % ("%dx%d" % tuple(deliver) if deliver else "(unknown records)",
+                         "the view AGREES" if agree else "the view DIFFERS (the second scaler would wait for rows that do not come)" if deliver else "not compared"))
+        rm = d.get("resize_margin")
+        if rm:
+            lines.append("resize margin table 0x1951514 +0xa..+0x18: %s (switch word %#x: %s)"
+                         % (", ".join("%#x" % w for w in rm["words_0xa_0x18"]), rm["switch_word"], "margins in use" if rm["switch_word"] == 0 else "margin 0"))
+        fh = next((s for s in f["coprocessor_sites"] if s["name"] == "fehold"), None)
+        if fh:
+            lines.append("F16 code word (fehold_a1m2_v1, 0x521760): %s" % fh["state"])
         ss = d.get("scaler_state")
         if ss:
             lines.append("resize pages (weak addresses; known sizes found):")

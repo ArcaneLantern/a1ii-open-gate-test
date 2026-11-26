@@ -1,5 +1,5 @@
 @echo off
-rem A1 II (firmware 4.00): apply the open-gate state with the encoder step without the MP4 header heights: the files' MP4 headers keep saying 3840x2160.
+rem A1 II (firmware 4.00): KIT v2 TEST 3 (cold boot, SteadyShot OFF): the full state, L5, F16, L16, L19, I19, S16, C19, then one read-only session. Expected to fail like the first run until test0 and test1 are reported.
 rem WRITES into the camera's memory (not firmware, not settings). A cold boot (battery out for 10 seconds) returns it to stock; whether the power switch alone does on the A1 II is not known.
 cd /d "%~dp0"
 if not exist ".venv\Scripts\python.exe" (
@@ -7,6 +7,6 @@ if not exist ".venv\Scripts\python.exe" (
   pause
   exit /b 1
 )
-".venv\Scripts\python.exe" -I -B "tools\camera_tests\CT6_memory_read_check\a1m2_apply.py" apply --no-meta %*
+".venv\Scripts\python.exe" -I -B "tools\camera_tests\CT6_memory_read_check\a1m2_apply.py" test3 %*
 echo.
 pause

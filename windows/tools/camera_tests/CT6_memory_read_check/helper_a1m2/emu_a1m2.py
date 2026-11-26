@@ -6,7 +6,7 @@ helper_fx30/emu_fx30.py with this camera's model (same harness: helper/emu_built
 whole page, direction 0, into the allocated buffer is accepted). Cases, for both libraries (check and dump):
   stock        an A1 II with the 4.00 files and stock memory (NTSC stored records) -> every check same, verdict READY
   stock-pal    the same with the stored records a PAL camera computes               -> READY (the records are soft sites)
-  applied      every design site holding its new bytes, the screen step included    -> TARGET everywhere, verdict READY
+  applied      every design site holding its new bytes, the screen step and F16 included -> TARGET everywhere, verdict READY
   no-screen    the open-gate state without the screen step                          -> open-gate TARGET, screen words STOCK, READY
   no-meta      the encoder side without the MP4 header heights (N19)                -> its sites TARGET, the two heights STOCK, READY
   real-rows    the real-rows alternative (R5) in place of L5                        -> table/matrix TARGET, the four picture records OTHER
@@ -112,6 +112,10 @@ def model(build="a1m2_400", applied=False, screen=True, reserve=True, exists=Fal
         for p in fl["patches"]:
             o, new = int(p["file_off"], 16), bytes.fromhex(p["new"])
             (lm if p["binary"] == "libmpr.so" else av)[o:o + len(new)] = new
+        if sensor == "ogsq_a1m2_v1":            # kit v2: the default (and test3) applies F16 with the squeeze design
+            for s in design("fehold_a1m2_v1")["sites"]:
+                a = int(s["ram_address"], 16)
+                cp[a - BASE:a - BASE + 4] = bytes.fromhex(s["new"])
         if screen:
             for s in sc["sites"]:
                 a = int(s["ram_address"], 16)

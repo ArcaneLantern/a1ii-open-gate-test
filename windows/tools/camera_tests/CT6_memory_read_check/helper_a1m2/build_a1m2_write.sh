@@ -22,10 +22,15 @@ for L in 5 6; do
     readcheck.c "$SEN" -o "$H/libJit_a1m2_L$L.so"
   "${CC[@]}" -DLEVEL=$L '-DSITES_H="expected_sites_ogh2880_a1m2_v1.h"' '-DDESIGN_LABEL="ogh2880_a1m2_v1"' -DIMAGER=0x1790350UL -DCTRL_DRVPARAM=0x6ccU -DREC=0x170U \
     readcheck.c "$SEN" -o "$H/libJit_a1m2_R$L.so"
+  # B5/B6 (kit v2, test0): fhband_a1m2_v1, the sensor window at full height with everything else stock (does the sensor read beyond the band?)
+  "${CC[@]}" -DLEVEL=$L '-DSITES_H="expected_sites_fhband_a1m2_v1.h"' '-DDESIGN_LABEL="fhband_a1m2_v1"' -DIMAGER=0x1790350UL -DCTRL_DRVPARAM=0x6ccU -DREC=0x170U \
+    readcheck.c "$SEN" -o "$H/libJit_a1m2_B$L.so"
 done
 for L in 16 17; do
   "${CC[@]}" -DLEVEL=$L '-DWORDS_H="expected_words_outsz2560_a1m2_v1.h"' readcheck.c "$SEN" -o "$H/libJit_a1m2_L$L.so"
   "${CC[@]}" -DLEVEL=$L '-DWORDS_H="expected_words_lcdfill_a1m2_v1.h"' readcheck.c "$SEN" -o "$H/libJit_a1m2_S$L.so"
+  # F16/F17 (kit v2): fehold_a1m2_v1, one code word of the resize set-up 0x521438 (the override 0xbceed4 skipped)
+  "${CC[@]}" -DLEVEL=$L '-DWORDS_H="expected_words_fehold_a1m2_v1.h"' readcheck.c "$SEN" -o "$H/libJit_a1m2_F$L.so"
 done
 for L in 19 20; do
   "${CC[@]}" -DLEVEL=$L '-DMP_H="expected_mp_ogfile2560_hs_s_a1m2_v2.h"' -DAVCAM_PHYS=0x401000000UL readcheck.c -o "$H/libJit_a1m2_L$L.so"
@@ -34,4 +39,4 @@ for L in 19 20; do
 done
 "${CC[@]}" -DLEVEL=19 '-DMP_H="expected_mp_ogfile2560_hs_s_a1m2_v1.h"' -DAVCAM_PHYS=0x401000000UL readcheck.c -o "$H/libJit_a1m2_N19.so"
 cd "$H"
-for N in L5 L6 R5 R6 L16 L17 L19 L20 N19 I19 I20 S16 S17 C19 C20; do echo "$(sha256sum libJit_a1m2_$N.so | cut -d' ' -f1) $(stat -c %s libJit_a1m2_$N.so) $N"; done
+for N in L5 L6 R5 R6 B5 B6 L16 L17 F16 F17 L19 L20 N19 I19 I20 S16 S17 C19 C20; do echo "$(sha256sum libJit_a1m2_$N.so | cut -d' ' -f1) $(stat -c %s libJit_a1m2_$N.so) $N"; done
