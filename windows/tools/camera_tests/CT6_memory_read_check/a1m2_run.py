@@ -38,8 +38,8 @@ import ct6_level1_run as R  # noqa: E402
 
 FIRMWARE, MODEL, BUILD = "4.00", "ILCE-1M2", "a1m2_400"
 S3 = HERE / "helper_a1m2"                      # this kit's folder (the name S3 is kept from s3_run.py)
-PINS = {"check": ("libJit_a1m2_check.so", "822d24f542e0479fc03aa0f5f16066e9d194cd5b72a169a7a2a39aa2a2de0aee"),      # a1m2read_v2 (kit v2, 2026-11-26)
-        "dump": ("libJit_a1m2_dump.so", "e9d50ac50158ad35ea43fdd64da3a6b9fc912bda90724bdb56889b014e5e5718")}
+PINS = {"check": ("libJit_a1m2_check.so", "2144f71fc0b82572cb620d71da59279b04059b5bdcb8b1abc8b957d4abe617e2"),      # a1m2read_v3 (kit v3, 2026-11-27)
+        "dump": ("libJit_a1m2_dump.so", "0c37bd6f104d57b457dbbfc1d4a980c6030e617e5fe7361bf391b9837008b45e")}       # + the two logs
 LEVELS = {"check": 101, "dump": 102}              # numbers outside the A7 IV runner's own levels: none of its level-specific code runs
 # THE WRITE STEPS. Each is one library built from the A7 IV helper's write code with this camera's tables (helper_a1m2/build_a1m2_write.sh).
 # They change the running camera's memory until a cold boot. They are run through a1m2_apply.py, never by a launcher of the read-only kit.
@@ -59,6 +59,12 @@ WRITE_STEPS = {
     "B5": ("libJit_a1m2_B5.so", "f4b7f029629a5d380d3b2390090aef4daace205b20f8e7a96a36edac22cbe7c8",
            "apply the diagnostic sensor step fhband_a1m2_v1 (the sensor window at full height, read-out length; everything else stock: test0)"),
     "B6": ("libJit_a1m2_B6.so", "6b42f041650008699bce5b17ef5a829485e22746c1d4031f6f1156418a4f4fa6", "put back the diagnostic sensor step fhband_a1m2_v1"),
+    # T5/T6 (kit v3, test5): ogbb_a1m2_v1 = the full design's sensor side (window at full height, read-out, matrix cells) with the four picture
+    # records taking the stock-size 2,446-row stage from active row 450 (first scaler 1:1): a normal 16:9 picture framed ~9% lower if the
+    # sensor delivers the full height; a band at the bottom and a restart if only ~2,462 lines arrive.
+    "T5": ("libJit_a1m2_T5.so", "479d1c891d4dde1b850821b6aba79644f0242ca468795c9403850a858aa9e319",
+           "apply the diagnostic sensor step ogbb_a1m2_v1 (full-height sensor window, the stock-size picture taken from the bottom of the frame: test5)"),
+    "T6": ("libJit_a1m2_T6.so", "d54ff344b3c886b2da6d1e81d1ca97739958340836c5aab5a2f47fa1e929a7af", "put back the diagnostic sensor step ogbb_a1m2_v1"),
     "L16": ("libJit_a1m2_L16.so", "2f09b46b607794fae3479d9bef9f8aad228546012ab145a859025f3a74acbfba", "apply the output size outsz2560_a1m2_v1 (one word)"),
     "L17": ("libJit_a1m2_L17.so", "2f5516ddd577bcc679120a4fef68fe3acc6ff3c292ab28daa238c9c031b56ab4", "put back the output size outsz2560_a1m2_v1"),
     # F16/F17 (kit v2): fehold_a1m2_v1, one code word of the resize set-up 0x521438: the first-scaler override 0xbceed4 is never applied, so the
@@ -83,7 +89,7 @@ WRITE_STEPS = {
     "C20": ("libJit_a1m2_C20.so", "c3167a72f599033619ca3171c8d77822632934833e158c1d1f78d2e1f7a78c38", "put back the C3 preview routine lcdcycle_a1m2_v1"),
 }
 PINS.update({k: v[:2] for k, v in WRITE_STEPS.items()})
-LEVELS.update({k: {"L": 200, "S": 300, "C": 400, "N": 500, "I": 700, "R": 800, "F": 900, "B": 1000}[k[0]] + int(k[1:]) for k in WRITE_STEPS})
+LEVELS.update({k: {"L": 200, "S": 300, "C": 400, "N": 500, "I": 700, "R": 800, "F": 900, "B": 1000, "T": 1100}[k[0]] + int(k[1:]) for k in WRITE_STEPS})
 WHICH = "check"
 DESIGN_MODES = ("0x820", "0x2820", "0x8c0", "0x28c0")
 
@@ -115,10 +121,49 @@ def expected():
 
 # ------------------------------------------------------------ reading a result
 
+LOG_BLOCK = re.compile(rb"^== (klog|camlog_last|camlog_first) at (0x[0-9a-f]+) raw (\d+) bytes follow\n", re.M)
+LOG_WORDS = ("CamCore", "AIF", "S-Ele", "memsize", "force exception", "Lost CAMOUT", "Refresh ng")
+
+
+def split_logs(data):
+    """Kit v3: the dump's raw log blocks (the kernel log, the camera core's two log areas), cut out of the result by their byte
+    counts; what is left is the text the rest of the reader parses, with one line in place of each block."""
+    logs, out, pos = {}, [], 0
+    while True:
+        m = LOG_BLOCK.search(data, pos)
+        if not m:
+            break
+        name, n = m.group(1).decode(), int(m.group(3))
+        logs[name] = data[m.end():m.end() + n]
+        out.append(data[pos:m.end()] + b"(%d raw bytes, saved as %s.bin)" % (len(logs[name]), name.encode()))
+        pos = m.end() + n
+    out.append(data[pos:])
+    return logs, b"".join(out)
+
+
+def log_lines(logs, limit=40):
+    """The log lines that say why the camera core refreshed or restarted (CamCore, AIF, S-Ele, memsize ...): camera core first, then the
+    kernel log; each line once, non-printing bytes dropped."""
+    out = []
+    for name in ("camlog_first", "camlog_last", "klog"):
+        blob = logs.get(name, b"")
+        for raw in re.split(rb"[\r\n\x00]+", blob):
+            ln = "".join(ch for ch in raw.decode("utf8", "replace") if " " <= ch <= "~").strip()
+            if ln and any(w in ln for w in LOG_WORDS):
+                ln = "%s: %s" % (name, ln[:200])
+                if ln not in out:
+                    out.append(ln)
+                if len(out) >= limit:
+                    return out
+    return out
+
+
 def check_result(data):
     """The facts of a result file. Keys the A7 IV runner prints, plus this helper's own under "s3"."""
     if WHICH in WRITE_STEPS:
         return write_result(data)
+    raw_bytes = data
+    logs, data = split_logs(data)
     text = data.decode("utf8", "replace")
     lines = text.split("\n")
     head = lines[0] if lines else ""
@@ -149,10 +194,13 @@ def check_result(data):
     s3["kernel_command_line"], s3["kernel_version"] = (cmd.group(1).strip() if cmd else None), (ver.group(1).strip() if ver else None)
     if pages:
         s3["decoded"] = decode_pages(pages)
+    s3["logs"] = {k: len(v) for k, v in logs.items()}
+    s3["log_headers"] = [ln for ln in lines if ln.startswith("camlog ")]
+    s3["log_lines"] = log_lines(logs)
     import hashlib
-    return {"bytes": len(data), "sha256": hashlib.sha256(data).hexdigest(), "header_ok": head.startswith("a1m2read ") and "ILCE-1M2 4.00" in head, "euid": "not read",
-            "sections": [ln for ln in lines if ln.startswith("== ")], "problems": len(s3["problem_lines"]), "complete": "== done" in lines[-3:],
-            "s3": s3, "_pages": pages}
+    return {"bytes": len(raw_bytes), "sha256": hashlib.sha256(raw_bytes).hexdigest(), "header_ok": head.startswith("a1m2read ") and "ILCE-1M2 4.00" in head,
+            "euid": "not read", "sections": [ln for ln in lines if ln.startswith("== ")], "problems": len(s3["problem_lines"]), "complete": "== done" in lines[-3:],
+            "s3": s3, "_pages": pages, "_logs": logs}
 
 
 def record_state(mode, rec):
@@ -320,12 +368,12 @@ def run_helper(data):
     try:
         import emu_a1m2
     except Exception:
-        text = "a1m2read a1m2read_v2 %s for ILCE-1M2 4.00; read-only\n== file /proc/version\nLinux (simulated)\n\n== end 18 bytes\n== summary\nVERDICT READY (canned)\n== done\n" % WHICH
+        text = "a1m2read a1m2read_v3 %s for ILCE-1M2 4.00; read-only\n== file /proc/version\nLinux (simulated)\n\n== end 18 bytes\n== summary\nVERDICT READY (canned)\n== done\n" % WHICH
         return text.encode(), "canned"
     r, text = emu_a1m2.run(bytes(data))
     if r.bad:
         raise AssertionError("the emulated helper stopped: %s" % r.bad)
-    return text.encode(), "emulated"
+    return r.writes.get(emu_a1m2.E.RESULT, b""), "emulated"           # the bytes as written (kit v3: the dump holds raw logs)
 
 
 def make_sim(lib, files=None, fault=None):
@@ -384,6 +432,12 @@ def selftest(lib):
             check(dp.get("fit_16x9_on_3x2_panel", {}).get("state") == "letterbox (stock)" and dp.get("screen_words", {}).get("stock") == 7
                   and "panel_types" in dp and "c3_ratio_constants" in dp,
                   "dump: the display pages decode (fit word, the 7 screen words, panel types, the C3 ratio constants)")
+            lg = r.get("result", {}).get("_logs", {})
+            check(f.get("logs") == {"klog": 0x40000, "camlog_last": 0x2000, "camlog_first": 0xA020} and len(lg.get("klog", b"")) == 0x40000
+                  and len(f.get("log_headers", [])) == 3 and all("as expected" in ln for ln in f["log_headers"])
+                  and any("CamCore: AIF0 out[3840x2560] > memsize[3840x2462]" in ln for ln in f.get("log_lines", []))
+                  and f["log_lines"][0].startswith("camlog_first: "),
+                  "dump (kit v3): the kernel log and the camera core's two log areas are cut out by their byte counts, the CamCore lines found")
     s, sim, stopped = R.simulate(lib, R.body_run, files={R.LIB_PATH.decode(): b"someone else's"})
     check(stopped and W not in R.sent(s) and D not in R.sent(s), "a foreign libJit.so on the camera: stops, nothing written, nothing deleted")
     s, sim, stopped = R.simulate(lib, R.body_run, files={"/tmp_wbshd/readcheck_result.txt": b"old"})
@@ -398,6 +452,13 @@ def selftest(lib):
     return done
 
 
+def view_plausible(rv):
+    """The resize view's words are judged only when they are those of a 4K movie mode: drive mode 0x820/0x2820/0x8c0/0x28c0, a crop
+    4,320 or 4,332 wide and 2,000 to 3,000 high, an output of 3840x2160 or 3840x2560 and a first-scaler size no wider than the crop."""
+    return (rv["mode"] in DESIGN_MODES and rv["crop"][0] in (4320, 4332) and 2000 <= rv["crop"][1] <= 3000 and tuple(rv["output"]) in ((3840, 2160), (3840, 2560))
+            and 1920 <= rv["first_scaler"][0] <= rv["crop"][0] and 1080 <= rv["first_scaler"][1] <= 3000)
+
+
 def report(session, facts, which):
     f = facts["s3"]
     if which in WRITE_STEPS:
@@ -409,9 +470,14 @@ def report(session, facts, which):
         for ln in lines:
             session.say(ln)
         return
-    lines = ["A1 II 4.00 %s, %s" % (which, time.strftime("%Y-%m-%d %H:%M:%S")), f["header"], f["verdict"],
-             "identity: %d same, %d differ" % (f["identity_same"], f["identity_differs"]),
-             "kernel: %s" % f["kernel_version"], "command line: %s" % f["kernel_command_line"]]
+    lines = ["A1 II 4.00 %s, %s" % (which, time.strftime("%Y-%m-%d %H:%M:%S")), f["header"], f["verdict"]]
+    if f.get("logs") or f.get("log_headers"):           # kit v3 (dump): what the camera core and the kernel printed, first
+        lines.append("logs copied: %s" % (", ".join("%s %d bytes" % kv for kv in f.get("logs", {}).items()) or "none"))
+        lines += ["  " + ln for ln in f.get("log_headers", [])]
+        lines += (["log lines (CamCore / AIF / S-Ele / memsize ...), camera core first:"] + ["  " + ln for ln in f["log_lines"]]
+                  if f.get("log_lines") else ["log lines: none with CamCore / AIF / S-Ele / memsize"])
+    lines += ["identity: %d same, %d differ" % (f["identity_same"], f["identity_differs"]),
+              "kernel: %s" % f["kernel_version"], "command line: %s" % f["kernel_command_line"]]
     for s in f["coprocessor_sites"]:
         lines.append("  coprocessor %-22s %s len %-4d %s%s" % (s["name"], s["address"], s["length"], s["state"], "" if s["shown"] is None else "  (" + s["shown"] + ")"))
     lines.append("stored records of the four open-gate modes: " + ", ".join("%s %s" % kv for kv in f.get("stored_records", {}).items()))
@@ -441,7 +507,10 @@ def report(session, facts, which):
         if d.get("size_table"):
             lines.append("movie size table: " + "; ".join("%dx%d id %#x" % tuple(r) for r in d["size_table"]))
         rv = d.get("resize_view")
-        if rv:
+        if rv and not view_plausible(rv):              # kit v3: in stills (or any state but a 4K movie mode) these words are something else
+            lines.append("resize view 0x16237b0: view not in the 4K movie state (mode %s, crop %dx%d, output %dx%d): not judged"
+                         % (rv["mode"], *rv["crop"], *rv["output"]))
+        elif rv:
             st = {s["name"]: s["state"] for s in f["coprocessor_sites"]}
             rec = st.get("record_8c0_left", "")
             mat = st.get("matrix_half", "")
@@ -481,7 +550,7 @@ def report(session, facts, which):
             if "screen_words" in dp:
                 lines.append("  screen step words: %(stock)d stock, %(new)d applied, %(other)d other" % dp["screen_words"])
     session.save_bytes("a1m2_report.txt", ("\n".join(lines) + "\n").encode())
-    for ln in lines[:8] + lines[-6:]:
+    for ln in lines[:8 + len(f.get("log_headers", [])) + len(f.get("log_lines", []))] + lines[-6:]:
         session.say(ln)
 
 
@@ -507,7 +576,7 @@ def main():
     ap.add_argument("--remove-only", action="store_true")
     ap.add_argument("--clear-result", metavar="SHA256", help="first delete the result file of an earlier run from the RAM disk, only if its SHA-256 is this")
     ap.add_argument("--firmware-shown")
-    ap.add_argument("--writes-memory", action="store_true", help="needed for a write step (L5, L6, R5, R6, L16, L17, L19, L20, N19, I19, I20, S16, S17, C19, C20): it changes the running camera's memory")
+    ap.add_argument("--writes-memory", action="store_true", help="needed for a write step (L5, L6, R5, R6, B5, B6, T5, T6, F16, F17, L16, L17, L19, L20, N19, I19, I20, S16, S17, C19, C20): it changes the running camera's memory")
     a = ap.parse_args()
     if a.which in WRITE_STEPS and a.go and not (a.dry_run or a.selftest) and not a.writes_memory:
         raise SystemExit("%s is a write step: %s. It needs --writes-memory as well. Use a1m2_apply.py. Nothing was sent." % (a.which, WRITE_STEPS[a.which][2]))
@@ -538,6 +607,8 @@ def main():
                 pages = facts.pop("_pages", {})
                 for addr, (name, blob) in sorted(pages.items()):
                     session.save_bytes("cp_%s_%08x.bin" % (name, addr), blob)
+                for name, blob in sorted(facts.pop("_logs", {}).items()):          # kit v3: klog.bin, camlog_first.bin, camlog_last.bin
+                    session.save_bytes("%s.bin" % name, blob)
                 report(session, facts, a.which)
         finally:
             time.sleep(3)

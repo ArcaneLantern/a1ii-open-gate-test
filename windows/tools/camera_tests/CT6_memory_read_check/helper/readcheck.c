@@ -106,8 +106,8 @@
 #ifndef LEVEL
 #define LEVEL 1
 #endif
-#if LEVEL < 1 || LEVEL > 33 || LEVEL == 11
-#error "LEVEL must be 1 to 10, or 12 to 33"
+#if LEVEL < 1 || LEVEL > 35 || LEVEL == 11
+#error "LEVEL must be 1 to 10, or 12 to 35"
 #endif
 #if LEVEL >= 3 && defined(HOST_TEST)
 #error "levels 3 to 8 have no PC build: they call three functions of the camera's libsencore.so (see emu_built.py)"
@@ -202,7 +202,7 @@ static i64 sys_write(int fd, const void *b, u64 n) { return sc(NR_write, fd, (i6
 static i64 sys_close(int fd) { return sc(NR_close, fd, 0, 0, 0, 0, 0); }
 static i64 sys_getdents64(int fd, void *b, u64 n) { return sc(NR_getdents64, fd, (i64)b, (i64)n, 0, 0, 0); }
 static i64 sys_geteuid(void) { return sc(NR_geteuid, 0, 0, 0, 0, 0, 0); }
-#if LEVEL == 2 || LEVEL == 3 || (LEVEL >= 7 && LEVEL <= 12) || LEVEL == 15 || LEVEL == 18 || (LEVEL >= 21 && LEVEL <= 28) || LEVEL == 31 || LEVEL == 32 || LEVEL == 33  /* a level 1 build contains no mapping call at all */
+#if LEVEL == 2 || LEVEL == 3 || (LEVEL >= 7 && LEVEL <= 12) || LEVEL == 15 || LEVEL == 18 || (LEVEL >= 21 && LEVEL <= 28) || LEVEL == 31 || LEVEL == 32 || LEVEL == 33 || LEVEL == 34 || LEVEL == 35  /* a level 1 build contains no mapping call at all */
 static i64 sys_mmap_ro(int fd, u64 len, u64 off)
 {
     i64 r = sc(NR_mmap, 0, (i64)len, 1 /* PROT_READ */, 1 /* MAP_SHARED */, fd, (i64)off);
@@ -1190,7 +1190,7 @@ static void level12(void)
 
 /* ------------------------------------------------------------------ level 15: the movie output state, read-only */
 
-#if LEVEL == 15 || LEVEL == 21 || LEVEL == 28 || LEVEL == 33
+#if LEVEL == 15 || LEVEL == 21 || LEVEL == 28 || LEVEL == 33 || LEVEL == 34 || LEVEL == 35
 /* Level 21 is this same code with its own table of ranges: the raw ports' state (the RDC objects of the device group), read-only.
    The three imports, all from libsencore.so (finding F512). The transfer is used with direction 0 only: coprocessor to buffer. */
 extern u64 cam_dmm_alloc(u32 size, u32 *handle) __asm__("_Z9dmm_allocjPj");
@@ -1241,6 +1241,55 @@ static const struct l15_range out_fixed[] = {
     { 0x010fe000U, 0x2000U, "settings" },          /* the settings block 0x10fe5d0 (external-table words +0x33c, colour matrix +0xa1e) */
     { 0x014f6000U, 0x1000U, "curve_globals" },     /* 0x14f69bc to 0x14f69cf */
     { 0x011d0000U, 0x2000U, "context" },           /* the camera core's context 0x11d0680, as in level 15 */
+};
+#elif LEVEL == 34
+#define L15_N "34"
+#define L15_HEAD "== level 34: the spatial noise-reduction state, read-only\n"
+/* cpapp-b.bin 6.02 (findings F1053, F1054; request 79): the run-time tuning tables CAMNRS::job_YC_CalcParam 0x339d78 and its helpers
+   0x878456 / 0x878858 read (0x12af990 to 0x12b53e3), the picture calculation's input, developer flags and aux (0x1a39080, 0x1a39188,
+   0x1a39360), its double output buffer (0x1a519c8 + 0x1248 x n, the spatial block at +0xcc4) and buffer toggle (0x14eedfc), the
+   calculation's debug copies (0x1a4a8b8 on), the camera context that points at the buffer in use (0x11de450 + 0xb8), the debug settings
+   block (0x143c9a8, the temporal override 0x143ca55) with the two setter arrays (0x143e1b0, 0x143ebc4), and the camera core's context.
+   Nothing is found through a pointer. */
+static const struct l15_range out_fixed[] = {
+    { 0x012af000U, 0x7000U, "nr_tables" },         /* the spatial stage's tuning tables 0x12af990 to 0x12b53e3 */
+    { 0x01a39000U, 0x1000U, "calc_state" },        /* input 0x1a39080 (0x390 bytes), flag block 0x1a39188, aux 0x1a39360 */
+    { 0x01a51000U, 0x3000U, "calc_output" },       /* the two output buffers 0x1a519c8 and 0x1a52c10 (0x1248 bytes each) */
+    { 0x014ee000U, 0x1000U, "calc_toggle" },       /* the buffer toggle 0x14eedfc */
+    { 0x01a4a000U, 0x2000U, "calc_debug" },        /* the calculation's debug copies (0x1a4a8b8, 0x1a4a8e0, 0x1a4b990), when its flag 0x11 is on */
+    { 0x011de000U, 0x1000U, "camera_ctx" },        /* the camera context 0x11de450 (+0xb8: the parameter buffer the apply uses) */
+    { 0x0143c000U, 0x4000U, "settings_setters" },  /* the debug settings block 0x143c9a8 and the setter arrays 0x143e1b0, 0x143ebc4 */
+    { 0x011d0000U, 0x2000U, "context" },           /* the camera core's context 0x11d0680, as in level 15 */
+};
+#elif LEVEL == 35
+#define L15_N "35"
+#define L15_HEAD "== level 35: the display state, read-only\n"
+/* cpapp-b.bin 6.02 (finding F1067; build/disp_state.py has the same table): the memory the display code addresses directly, as whole
+   pages: the writable and the initialised data of the display driver (code 0xaa0000 to 0xad8000), of the display framework VDF (0x1e0000
+   to 0x1e8000, 0x61c000 to 0x640000) and of the InfraBB video code (0x1a0000 to 0x1a8000), and the camera core's context. Two reads, one
+   with Gamma Display Assist off and one with it on, show which bytes follow the setting. Nothing is found through a pointer. */
+static const struct l15_range out_fixed[] = {
+    { 0x01c5c000U, 0x3e000U, "disp_bss" },
+    { 0x01c51000U, 0x1000U, "disp_bss_low" },
+    { 0x01461000U, 0x6000U, "disp_handles" },
+    { 0x014f5000U, 0x5000U, "disp_globals" },
+    { 0x011e6000U, 0x2000U, "disp_state" },
+    { 0x0121f000U, 0x4000U, "vdf_state" },
+    { 0x014b0000U, 0x4000U, "vdf_globals" },
+    { 0x0100d000U, 0x8000U, "disp_data" },
+    { 0x01040000U, 0x5000U, "vdf_data_a" },
+    { 0x0104a000U, 0x2000U, "vdf_data_b" },
+    { 0x0106a000U, 0x4000U, "vdf_data_c" },
+    { 0x01071000U, 0x2000U, "vdf_data_d" },
+    { 0x010ac000U, 0x3000U, "vdf_data_e" },
+    { 0x01033000U, 0x1000U, "shared_data" },
+    { 0x01476000U, 0x1000U, "misc_a" },
+    { 0x01484000U, 0x1000U, "misc_b" },
+    { 0x0150c000U, 0x1000U, "misc_c" },
+    { 0x0155c000U, 0x3000U, "misc_d" },
+    { 0x01562000U, 0x1000U, "misc_e" },
+    { 0x01927000U, 0x2000U, "misc_f" },
+    { 0x011d0000U, 0x2000U, "context" },
 };
 #else
 #define L15_N "15"
@@ -3325,7 +3374,7 @@ static void run(void)
 #if LEVEL == 13 || LEVEL == 14
     level13();
 #endif
-#if LEVEL == 15 || LEVEL == 21 || LEVEL == 28 || LEVEL == 33
+#if LEVEL == 15 || LEVEL == 21 || LEVEL == 28 || LEVEL == 33 || LEVEL == 34 || LEVEL == 35
     level15();
 #endif
 #if LEVEL == 16 || LEVEL == 17

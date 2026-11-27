@@ -27,7 +27,7 @@ DES = ROOT / "modding/designs"
 sys.path.insert(0, str(ROOT / "build"))
 
 BASE = 0x108000
-LABEL = "a1m2read_v2"                                 # v2 (kit v2): + the resize view page, the margin page, the fehold word
+LABEL = "a1m2read_v3"                                 # v2 (kit v2): + the resize view page, the margin page, the fehold word; v3 (kit v3): + the two logs in the dump build
 CP_LO, CP_HI = 0xC0000, 0x2700000                     # coprocessor addresses a read may have: its logs, image and RAM tables
 AVCAM_PHYS, AVCAM_RESERVE = 0x401000000, "@0x401000000"   # kemco: memrsv=0x01000000@0x401000000:ex, as the A7 IV
 ID_FILES = {"/libmpr.so": "nflasha15/lib/libmpr.so", "/libsencore.so": "nflasha15/lib/libsencore.so", "/libJiritsu.so": "nflasha15/lib/libJiritsu.so"}

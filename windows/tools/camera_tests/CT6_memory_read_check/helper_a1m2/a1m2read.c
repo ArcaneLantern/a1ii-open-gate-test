@@ -17,6 +17,8 @@
  *      address this build assumes (AVCAM_PHYS)
  *   E  dump build only: whole 4 KB pages of coprocessor memory at fixed addresses, as hex (state for the port:
  *      register shadow, stored records, size table, the coprocessor's own log)
+ *   F  dump build only (kit v3): the main processor's kernel log buffer and two areas of the camera core's print log, raw,
+ *      through read-only mappings of /dev/mem, each only if the kernel command line names or reserves it (see log_part)
  * Coprocessor memory is read with the camera's transfer function, direction 0 (coprocessor to buffer) only: this
  * file contains no call with another direction, no writable mapping, no write to any file but the result.
  * If the result file already exists it does nothing at all.
@@ -85,7 +87,7 @@ static i64 sys_getdents64(int fd, void *b, u64 n) { return sc(NR_getdents64, fd,
 static int out_fd = -1;
 static u64 out_total;
 static u64 slen(const char *s) { u64 n = 0; while (s[n]) n++; return n; }
-static void put(const void *b, u64 n)
+__attribute__((noinline)) static void put(const void *b, u64 n)     /* not inlined: keeps the dump build inside one 65,520-byte packet (kit v3) */
 {
     if (out_fd < 0 || out_total >= TOTAL_CAP) return;
     if (n > TOTAL_CAP - out_total) n = TOTAL_CAP - out_total;
@@ -469,6 +471,78 @@ static void mp_part(void)
     sys_close((int)fd);
 }
 
+#if DUMP
+/* ------------------------------------------------------------------ F (dump build, kit v3): the two logs, read-only through /dev/mem
+ * The main processor's kernel log buffer (klog.addr/klog.size on the command line, as the A7 IV helper's level 9 copies it) and two
+ * areas of the camera core's print log. The camera core's prints (0xbd9e8c -> 0xbd8212: an IPC message, subsystem 3) are stored by
+ * osal_ulogio.ko in the memory /setting/ulogio.bin names: LOGB 0x5000000 + 0x778000, BASE tag 4 -> physical 0x405000000 (reserved by
+ * memrsv=0x01000000@0x405000000 on the command line); subsystem 3 at 0x40510ffc4 (total 0xb6738, eleven areas); area 1 = the ring of the
+ * latest lines, area 3 = the first lines after start-up. Each area starts with a 0x24-byte header ("RBUF", data address as the core sees
+ * it, data size = size - 0x24, ...; A7 III run 13). The data is copied raw whatever the header says; the header is printed with it. */
+#define KLOG_PHYS 0x400040000UL
+#define KLOG_SIZE 0x40000UL
+#define ULOG_RESERVE "memrsv=0x01000000@0x405000000"
+#define ULOG_SUB_PHYS 0x40510ffc4UL
+#define ULOG_SUB_TOTAL 0xb6738U
+static const struct camlog_area { const char *name; u64 phys; u32 size; } camlogs[] = {
+    { "camlog_last", 0x405150054UL, 0x2024 },
+    { "camlog_first", 0x40517209cUL, 0xa044 },
+};
+static u32 le32(const u8 *p) { return p[0] | (u32)p[1] << 8 | (u32)p[2] << 16 | (u32)p[3] << 24; }
+static const u8 *map_phys(int fd, u64 phys, u64 size, i64 *m, u64 *len)
+{
+    u64 lo = phys & ~0xfffUL;
+    *len = ((phys + size + 0xfff) & ~0xfffUL) - lo;
+    *m = sys_mmap_ro(fd, *len, lo);
+    return *m == -1 ? 0 : (const u8 *)*m + (phys - lo);
+}
+static void copy_phys(int fd, const char *name, u64 phys, u64 size)
+{
+    i64 m; u64 len;
+    const u8 *p = map_phys(fd, phys, size, &m, &len);
+    puts_("== "); puts_(name); puts_(" at "); putaddr(phys);
+    if (!p) { puts_(" NOT MAPPED\n"); return; }
+    puts_(" raw "); putnum((i64)size); puts_(" bytes follow\n");
+    put(p, size);
+    puts_("\n== "); puts_(name); puts_(" end\n");
+    sys_munmap((void *)m, len);
+}
+static void log_part(void)
+{
+    puts_("== logs: the main processor's kernel log and the camera core's print log\n");
+    i64 fd = sys_open("/dev/mem", F_RDONLY, 0);
+    if (fd < 0) { puts_("!! /dev/mem open failed "); putnum(fd); puts_("\n"); return; }
+    if (cmdline_has("klog.addr=0x400040000") && cmdline_has("klog.size=0x40000")) copy_phys((int)fd, "klog", KLOG_PHYS, KLOG_SIZE);
+    else puts_("!! the kernel command line does not name klog.addr=0x400040000 klog.size=0x40000; the kernel log is not read\n");
+    if (!cmdline_has(ULOG_RESERVE)) {
+        puts_("!! the kernel command line does not reserve memory as " ULOG_RESERVE "; the camera core's log is not read\n");
+    } else {
+        i64 m; u64 len;
+        const u8 *h = map_phys((int)fd, ULOG_SUB_PHYS, 12, &m, &len);
+        puts_("camlog subsystem "); putaddr(ULOG_SUB_PHYS);
+        if (!h) puts_(" NOT MAPPED\n");
+        else {
+            puts_(" header "); puthex(h, 12);
+            puts_(le32(h + 4) == 3 && le32(h + 8) == ULOG_SUB_TOTAL ? "  as expected\n" : "  NOT AS EXPECTED\n");
+            sys_munmap((void *)m, len);
+        }
+        for (u64 i = 0; i < sizeof camlogs / sizeof camlogs[0]; i++) {
+            const struct camlog_area *a = &camlogs[i];
+            h = map_phys((int)fd, a->phys, 0x24, &m, &len);
+            puts_("camlog area "); puts_(a->name); puts_(" "); putaddr(a->phys);
+            if (!h) { puts_(" NOT MAPPED\n"); continue; }
+            puts_(" header "); puthex(h, 0x24);
+            int good = le32(h) == 0x46554252u && le32(h + 8) == a->size - 0x24;
+            puts_(good ? "  as expected, written up to " : "  NOT AS EXPECTED\n");
+            if (good) { putaddr((u64)(u32)(le32(h + 20) - le32(h + 4))); puts_("\n"); }
+            sys_munmap((void *)m, len);
+            copy_phys((int)fd, a->name, a->phys + 0x24, a->size - 0x24);
+        }
+    }
+    sys_close((int)fd);
+}
+#endif
+
 /* ------------------------------------------------------------------ run */
 static void run(void)
 {
@@ -488,6 +562,9 @@ static void run(void)
     file_identity();
     cp_part();
     mp_part();
+#if DUMP
+    log_part();
+#endif
     puts_("== summary\nplaces not as the 4.00 update or not read: "); putnum(n_other);
     puts_(n_other ? "\nVERDICT NOT READY\n" : "\nVERDICT READY (every identity check same, every site stock or target)\n");
     puts_("== done\n");

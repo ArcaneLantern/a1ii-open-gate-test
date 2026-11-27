@@ -15,7 +15,11 @@ whole page, direction 0, into the allocated buffer is accepted). Cases, for both
   fx2          the FX2 1.01 files and coprocessor image                             -> identity DIFFERS, verdict NOT READY
   a7iv         the A7 IV 6.02 files and coprocessor image                           -> identity DIFFERS, verdict NOT READY
   no-reserve   a command line without the av-cam reservation                        -> av-cam.bin not read, NOT READY
+  no-logs      (kit v3) a command line that names neither log                       -> dump: both logs "not read", no log mapping, READY
+  log-header-bad (kit v3) the two log areas without their "RBUF" header             -> dump: NOT AS EXPECTED printed, data still copied, READY
   exists       a result file already present                                        -> nothing done
+Every case of the dump build (kit v3) also checks its log part: the 256 KB kernel log and the camera core's two areas copied raw and
+exactly, six read-only mappings all inside the two logs and all unmapped; the check build has no log part.
 and the other way round, the published check libraries of the FX30, FX3, FX2, ZV-E1 and A7S III kits run on a stock A1 II: each must say NOT
 READY (an A1 II owner might run one of those kits; their apply scripts start only after a READY check).
 """
@@ -91,7 +95,38 @@ class Run(E.Run):
         return self
 
 
-def model(build="a1m2_400", applied=False, screen=True, reserve=True, exists=False, enc="ogfile2560_hs_s_a1m2_v2", system="ntsc", sensor="ogsq_a1m2_v1"):
+# kit v3: the dump build's two logs (a1m2read.c log_part). The kernel log buffer, and the camera core's log subsystem with its two areas.
+KLOG, KLOG_N = 0x400040000, 0x40000
+ULOG_LO, ULOG_SUB, ULOG_TOTAL = 0x40510F000, 0x40510FFC4, 0xB6738
+CAMLOGS = (("camlog_last", 0x405150054, 0x2024), ("camlog_first", 0x40517209C, 0xA044))
+LOG_CMDLINE = b"klog.addr=0x400040000 klog.size=0x40000 memrsv=0x01000000@0x405000000 "
+
+
+def klog_bytes():
+    return bytes((k * 31 + 7) & 0xFF for k in range(KLOG_N))
+
+
+def camlog_text(name):
+    line = b"[%s] CamCore: AIF0 out[3840x2560] > memsize[3840x2462]\r\nFW: S-Ele Refresh ng\r\n" % name.encode()
+    return line
+
+
+def ulog_blob(header_ok=True):
+    """Physical 0x40510f000 up to the end of area 3: the subsystem header, each area's 0x24-byte header and some text in its data."""
+    blob = bytearray(0x40517209C + 0xA044 - ULOG_LO)
+    struct.pack_into("<III", blob, ULOG_SUB - ULOG_LO, 0x11223344, 3, ULOG_TOTAL)
+    for name, phys, size in CAMLOGS:
+        o = phys - ULOG_LO
+        data_va = 0x05000000 + (phys + 0x24 - 0x405000000)              # the data address as the camera core sees it (any value: printed, not checked)
+        magic = 0x46554252 if header_ok else 0
+        struct.pack_into("<IIIIII", blob, o, magic, data_va, size - 0x24, 0x40, 0, data_va + 0x100)
+        t = camlog_text(name)
+        blob[o + 0x24:o + 0x24 + len(t)] = t
+    return bytes(blob)
+
+
+def model(build="a1m2_400", applied=False, screen=True, reserve=True, exists=False, enc="ogfile2560_hs_s_a1m2_v2", system="ntsc", sensor="ogsq_a1m2_v1",
+          logs=True, log_header_ok=True):
     cp = bytearray(ex(build, "nflasha8/cpapp-b.bin"))
     av = bytearray(ex(build, "nflasha3/av-cam.bin"))
     libs = {n: ex(build, "nflasha15/lib" + n) for n in ("/libmpr.so", "/libsencore.so", "/libJiritsu.so")}
@@ -127,14 +162,15 @@ def model(build="a1m2_400", applied=False, screen=True, reserve=True, exists=Fal
     files["/proc/self/maps"] = maps
     files["/proc/meminfo"] = b"MemTotal: 1 kB\n"
     files["/dev/mem"] = b""
-    files["/proc/cmdline"] = b"console=ttyS0 " + (b"memrsv=0x01000000@0x401000000:ex " if reserve else b"") + b"warm.mode=2"
+    files["/proc/cmdline"] = (b"console=ttyS0 " + (b"memrsv=0x01000000@0x401000000:ex " if reserve else b"") + (LOG_CMDLINE if logs else b"")
+                              + b"warm.mode=2")
     for n, b in libs.items():
         files["/usr/lib" + n] = b
     dirs = {"/tmp_wbshd", "/proc", "/proc/self", "/sys/module/liro/parameters", "/log", "/usr/lib"}
     if exists:
         files[E.RESULT] = b"earlier result\n"
     phys = {FACTS["avcam_phys"]: bytes([0x5A]) * 0x1000 + bytes(av[0x1000:]),      # the first page is not as in the file on a camera (A7S III, 2026-11-21)
-            E.BUF_PHYS & ~0xFFF: bytes(0x2000)}
+            E.BUF_PHYS & ~0xFFF: bytes(0x2000), KLOG: klog_bytes(), ULOG_LO: ulog_blob(log_header_ok)}
     own = {lm_at: bytes(lm)}
     return files, dirs, phys, {"image": bytes(cp), "ram": ram}, own
 
@@ -144,6 +180,61 @@ def run(lib, **kw):
     r = Run(lib, 22, files, dirs, phys=phys, cp=cp, own=own)      # level 22: the A7 IV harness's rules for a read-only helper that maps /dev/mem
     r.go()
     return r, r.writes.get(E.RESULT, b"").decode("utf8", "replace")
+
+
+def paddr(v):
+    """An address as the helper's putaddr prints it: 0x and whole bytes, leading zero bytes left out (at least one byte)."""
+    b = v.to_bytes(8, "big")
+    k = 0
+    while k < 7 and not b[k]:
+        k += 1
+    return b"0x" + b[k:].hex().encode()
+
+
+def log_problems(which, case, r):
+    """Kit v3: the dump build copies the kernel log and the camera core's two log areas exactly, raw, through read-only mappings it
+    unmaps again, only when the command line names them; the check build has no log part at all."""
+    raw = r.writes.get(E.RESULT, b"")
+    if which == "check":
+        return ["the check build has a log part"] if b"== logs" in raw else []
+    out = []
+    if b"== logs: the main processor's kernel log and the camera core's print log\n" not in raw:
+        return ["no log part in the dump"]
+    if r.maps or r.fds:
+        out.append("a mapping or descriptor left open: %s %s" % (r.maps, r.fds))
+    # the mappings this part makes: those in the kernel log's 256 KB or in the 16 MB the log module reserves; each must lie inside the
+    # kernel log or inside the subsystem header to the end of area 3
+    log_maps = [(off, n) for off, n, prot, flags in r.map_log if KLOG <= off < KLOG + KLOG_N or 0x405000000 <= off < 0x406000000]
+    if any(prot != 1 or flags != 1 for _, _, prot, flags in r.map_log):
+        out.append("a mapping that is not read-only and shared")
+    if any(not (off + n <= KLOG + KLOG_N if off < 0x405000000 else ULOG_LO <= off and off + n <= (0x40517209C + 0xA044 + 0xFFF) & ~0xFFF)
+           for off, n in log_maps):
+        out.append("a log mapping outside the two logs: %s" % [(hex(o), hex(n)) for o, n in log_maps])
+    if case not in ("no-logs",) and len(log_maps) != 6:          # klog; the subsystem header; per area its header and its data
+        out.append("log mappings: %s" % [(hex(o), hex(n)) for o, n in log_maps])
+    ulog = ulog_blob(case != "log-header-bad")
+    if case == "no-logs":
+        for w in (b"!! the kernel command line does not name klog.addr=0x400040000 klog.size=0x40000; the kernel log is not read\n",
+                  b"!! the kernel command line does not reserve memory as memrsv=0x01000000@0x405000000; the camera core's log is not read\n"):
+            if w not in raw:
+                out.append("missing %r" % w[:60])
+        if log_maps:
+            out.append("logs mapped although the command line does not name them")
+        return out
+    want = [b"== klog at 0x0400040000 raw 262144 bytes follow\n" + klog_bytes() + b"\n== klog end\n",
+            b"camlog subsystem 0x040510ffc4 header 4433221103000000" + struct.pack("<I", ULOG_TOTAL).hex().encode() + b"  as expected\n"]
+    for name, phys, size in CAMLOGS:
+        o = phys - ULOG_LO
+        hdr = ulog[o:o + 0x24].hex().encode()
+        want.append(b"camlog area %s %s header %s" % (name.encode(), paddr(phys), hdr)
+                    + (b"  NOT AS EXPECTED\n" if case == "log-header-bad" else b"  as expected, written up to 0x0100\n"))
+        want.append(b"== %s at %s raw %d bytes follow\n" % (name.encode(), paddr(phys + 0x24), size - 0x24) + ulog[o + 0x24:o + size] + b"\n== %s end\n" % name.encode())
+    for w in want:
+        if w not in raw:
+            out.append("log copy not exact: %r" % w[:70])
+    if case == "stock" and b"CamCore: AIF0 out[3840x2560] > memsize[3840x2462]" not in raw:
+        out.append("the camera core's lines are not in the result")
+    return out
 
 
 def main():
@@ -161,7 +252,9 @@ def main():
                                ("fx30", {"build": "fx30_601"}, ("VERDICT NOT READY", "DIFFERS from the 4.00 update")),
                                ("fx2", {"build": "fx2_101"}, ("VERDICT NOT READY", "DIFFERS from the 4.00 update")),
                                ("a7iv", {"build": "a7iv_602"}, ("VERDICT NOT READY", "DIFFERS from the 4.00 update")),
-                               ("no-reserve", {"reserve": False}, ("VERDICT NOT READY", "av-cam.bin is not read")), ("exists", {"exists": True}, ())):
+                               ("no-reserve", {"reserve": False}, ("VERDICT NOT READY", "av-cam.bin is not read")),
+                               ("no-logs", {"logs": False}, ("VERDICT READY",)), ("log-header-bad", {"log_header_ok": False}, ("VERDICT READY",)),
+                               ("exists", {"exists": True}, ())):
             r, text = run(lib, **kw)
             problems = []
             if r.bad:
@@ -206,6 +299,7 @@ def main():
                         problems.append("sensor sites: %s" % sn)
                 if which == "dump" and case == "stock" and text.count("cppage ") != sum(k for _, _, k in FACTS["dump_ranges"]):
                     problems.append("dump pages: %d" % text.count("cppage "))
+                problems += log_problems(which, case, r)
             n_tr = sum(1 for c in r.lib_calls if c[0] == "transfer")
             print(f"{which:5} {case:10} {'ok' if not problems else 'FAILED'}  result {len(text):7} bytes, {n_tr:3} page reads  {'; '.join(problems)}")
             ok &= not problems

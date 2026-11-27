@@ -10,6 +10,8 @@ A7S III kit's C3-routine cases (helper_s3/emu_s3_write.py):
     ids, 0, records} -> the 0x170-byte stored records; the four modes the designs change (0x820, 0x2820, 0x8c0, 0x28c0) hold the A1 II's
     emulated stock records of one timing system (build/emu_drvparam.py a1m2_400 with the 60 Hz or the 50 Hz table), the others a filler.
     readcheck.c's MULTI_REC path must pick the variant every record holds and refuse a camera whose records agree on none;
+    B5/B6 (kit v2 test0, fhband_a1m2_v1) and T5/T6 (kit v3 test5, ogbb_a1m2_v1) the same way, and each sensor step against the others'
+    states (nothing written);
   - L16/L17, S16/S17, F16/F17 (kit v2: one code word of the loaded image): the movie size table as the A1 II's set-up fills it (build/emu_size_table.py a1m2_400), and the loaded image for the
     screen words;
   - L19/L20, N19, I19/I20: av-cam.bin at its physical address and libmpr.so in the process's own mapping;
@@ -156,14 +158,15 @@ def main():
         return True
 
     # ---- L5 / L6 (ogsq_a1m2_v1) and R5 / R6 (ogh2880_a1m2_v1): 13 table/record sites and the four stored records, NTSC or PAL
-    des = {"L": design("ogsq_a1m2_v1"), "R": design("ogh2880_a1m2_v1"), "B": design("fhband_a1m2_v1")}     # B: kit v2's test0 (B5/B6)
+    des = {"L": design("ogsq_a1m2_v1"), "R": design("ogh2880_a1m2_v1"), "B": design("fhband_a1m2_v1"),      # B: kit v2's test0 (B5/B6)
+           "T": design("ogbb_a1m2_v1")}                                                                      # T: kit v3's test5 (T5/T6)
 
     def recs_of(d):
         return {s: {int(m, 16): (RECS + v["index"] * REC, bytes.fromhex(v[s]["stock"]), bytes.fromhex(v[s]["design"])) for m, v in d["stored_records"].items()}
                 for s in ("ntsc", "pal")}
     recs = {k: recs_of(d) for k, d in des.items()}
     for s in ("ntsc", "pal"):                                       # the two designs start from the same stock records
-        assert all(recs["L"][s][m][1] == recs["R"][s][m][1] == recs["B"][s][m][1] for m in recs["L"][s])
+        assert all(recs["L"][s][m][1] == recs["R"][s][m][1] == recs["B"][s][m][1] == recs["T"][s][m][1] for m in recs["L"][s])
 
     def table_allowed(d):
         al = {}
@@ -196,7 +199,8 @@ def main():
     def state(mem, kind, system):
         vals = [(mem.read(a, 1)[0], pr) for a, pr in allowed_for(kind, system).items()]
         return "stock" if all(v == pr[0] for v, pr in vals) else "new" if all(v == pr[1] for v, pr in vals) else "mixed"
-    for kind, (sa, sb), title in (("L", ("L5", "L6"), "ogsq_a1m2_v1"), ("R", ("R5", "R6"), "ogh2880_a1m2_v1"), ("B", ("B5", "B6"), "fhband_a1m2_v1")):
+    for kind, (sa, sb), title in (("L", ("L5", "L6"), "ogsq_a1m2_v1"), ("R", ("R5", "R6"), "ogh2880_a1m2_v1"), ("B", ("B5", "B6"), "fhband_a1m2_v1"),
+                                  ("T", ("T5", "T6"), "ogbb_a1m2_v1")):
         La, Lb = lib(sa), lib(sb)
         nsites = len(des[kind]["patches"])
         for system in ("ntsc", "pal"):
@@ -231,15 +235,20 @@ def main():
     L5, L6, R5, R6 = lib("L5"), lib("L6"), lib("R5"), lib("R6")
     # the default and the real-rows step against each other: neither may write over the other's state
     B5, B6 = lib("B5"), lib("B6")
+    T5, T6 = lib("T5"), lib("T6")
     for a_lib, a_kind, b_lib, b_label in ((L5, "L", R5, "R5"), (R5, "R", L5, "L5"), (R5, "R", L6, "L6"), (L5, "L", R6, "R6"),
                                           (B5, "B", L5, "L5"), (B5, "B", R5, "R5"), (L5, "L", B5, "B5"), (R5, "R", B5, "B5"),
-                                          (B5, "B", L6, "L6")):
+                                          (B5, "B", L6, "L6"),
+                                          # kit v3: test5's step T5 against every other sensor step, both ways
+                                          (T5, "T", L5, "L5"), (L5, "L", T5, "T5"), (T5, "T", R5, "R5"), (R5, "R", T5, "T5"),
+                                          (T5, "T", B5, "B5"), (B5, "B", T5, "T5"), (T5, "T", L6, "L6"), (T5, "T", R6, "R6"),
+                                          (L5, "L", T6, "T6"), (R5, "R", T6, "T6")):
         mem = camera()
         go(a_lib, mem, allowed_for(a_kind, "ntsc"))
         before = mem.snapshot()
-        r, t = go(b_lib, mem, {**allowed_for("L", "ntsc"), **allowed_for("R", "ntsc"), **allowed_for("B", "ntsc")})
+        r, t = go(b_lib, mem, {**allowed_for("L", "ntsc"), **allowed_for("R", "ntsc"), **allowed_for("B", "ntsc"), **allowed_for("T", "ntsc")})
         ok(not r.bad and r.n_writes == 0 and changed_only(mem, before, {}),
-           f"{b_label} on a camera holding {dict(L='L5', R='R5', B='B5')[a_kind]}'s state: nothing is written")
+           f"{b_label} on a camera holding {dict(L='L5', R='R5', B='B5', T='T5')[a_kind]}'s state: nothing is written")
     # B6 is test0's put back only. On a camera holding L5's state it finds its own 4 sites and L5's records at its 7 record offsets in its target
     # state (L5 wrote the same values there) and puts back exactly those, nothing else: the README says to use open_gate_putback or a cold
     # boot after anything but test0.

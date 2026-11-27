@@ -1,7 +1,7 @@
 # A1 II (ILCE-1M2) 4.00: port notes
 
 How the open gate of the A7 IV / A7S III / FX3 kits was built for the A1 II, what was checked and how, and what is not known. Everything here
-is static reading of the 4.00 update or emulation of its own code; **nothing has run on an A1 II**. The working notes with every detail are
+is static reading of the 4.00 update or emulation of its own code, except the two tester runs described below (kit v1, kit v2 test 0). The working notes with every detail are
 in the project's map (`a7iv_map/modding/A1M2_PORT.md`, `A1M2_PORT_ENCODER.md`, `A1M2_PORT_SCREEN.md`, `A1M2_PORT_DMM_SIZE.md`).
 
 ## The firmware
@@ -88,11 +88,12 @@ The A1 II's sensor is the A1's (the register matrices of the two bodies are iden
 
 | Step | Library | SHA-256 |
 |---|---|---|
-| check (`a1m2read_v2`, kit v2) | libJit_a1m2_check.so | 822d24f542e0479fc03aa0f5f16066e9d194cd5b72a169a7a2a39aa2a2de0aee |
-| dump (`a1m2read_v2`: + the resize view and margin pages) | libJit_a1m2_dump.so | e9d50ac50158ad35ea43fdd64da3a6b9fc912bda90724bdb56889b014e5e5718 |
+| check (`a1m2read_v3`, kit v3) | libJit_a1m2_check.so | 2144f71fc0b82572cb620d71da59279b04059b5bdcb8b1abc8b957d4abe617e2 |
+| dump (`a1m2read_v3`: + the resize view and margin pages, + the kernel log and the camera core's print log) | libJit_a1m2_dump.so | 0c37bd6f104d57b457dbbfc1d4a980c6030e617e5fe7361bf391b9837008b45e |
 | L5 / L6 (ogsq_a1m2_v1) | libJit_a1m2_L5.so / L6 | 0b3357a397e29eb193e7c50de522fbbbef393884a11b542bbd3ea463b28d6167 / 7188f400be220b4a2c7cf60221cc4a6027e4db820bb397e577ca3886b7d82279 |
 | R5 / R6 (ogh2880_a1m2_v1) | libJit_a1m2_R5.so / R6 | fcb27cdbf129fb4f1f411f3dfee03b322c8751748d1b11354671e6630ee82ae6 / 933e176ac348e76b6f4d2553c9590e67fc24d5e674d4339f8d159b1083ab6c24 |
 | L16 / L17 (outsz2560_a1m2_v1) | libJit_a1m2_L16.so / L17 | 2f09b46b607794fae3479d9bef9f8aad228546012ab145a859025f3a74acbfba / 2f5516ddd577bcc679120a4fef68fe3acc6ff3c292ab28daa238c9c031b56ab4 |
+| T5 / T6 (ogbb_a1m2_v1, kit v3 test5) | libJit_a1m2_T5.so / T6 | 479d1c891d4dde1b850821b6aba79644f0242ca468795c9403850a858aa9e319 / d54ff344b3c886b2da6d1e81d1ca97739958340836c5aab5a2f47fa1e929a7af |
 | B5 / B6 (fhband_a1m2_v1, kit v2 test0) | libJit_a1m2_B5.so / B6 | f4b7f029629a5d380d3b2390090aef4daace205b20f8e7a96a36edac22cbe7c8 / 6b42f041650008699bce5b17ef5a829485e22746c1d4031f6f1156418a4f4fa6 |
 | F16 / F17 (fehold_a1m2_v1, kit v2) | libJit_a1m2_F16.so / F17 | bd38f3d9ef71ff426f2e9c85394613cba7b77cca8f0483b8450a0bb0cc018d90 / 2d3c1ef67737264768947e3791d40106a466f5fd3b898ad8ed1e5c442abe9211 |
 | L19 / L20 (ogfile2560_hs_s_a1m2_v2) | libJit_a1m2_L19.so / L20 | 88c96675d996b9c1c4ef54dcbf94bde59e2fc05a848bf6f5f05630ca33eb4d2e / 93c9a6427b098883c79b9e8b19bf4beb6603f6e56fcb70e603db8d084f9f500b |
@@ -105,14 +106,17 @@ The A1 II's sensor is the A1's (the register matrices of the two bodies are iden
   and constants (`build_a1m2_write.sh`): IMAGER 0x1790350, CTRL_DRVPARAM 0x6cc, REC 0x170, MULTI_REC with four stored records in NTSC and PAL
   variants; av-cam at 0x401000000; the C step with MP_LIB appFw.so. The read-only helper `a1m2read.c` is the FX30 kit's with one addition:
   the four 3,000-byte picture records carry their target as a list of changed bytes, so the library fits one upload packet.
-- **Checks that pass (kit v2):** `emu_a1m2_write.py` 132 cases (v1's 106 + F16/F17 + B5/B6: NTSC and PAL, again, put back, a mixed-variant camera, lost writes, B5 against L5/R5 states and back, B6 on L5's state touching only its own sites) (every step: apply, again, put back, NTSC and PAL, a mixed-variant camera, lost writes,
+- **Checks that pass (kit v3):** `emu_a1m2_write.py` 155 cases (v1's 106 + F16/F17 + B5/B6 + T5/T6: NTSC and PAL, again, put back, a mixed-variant camera, lost writes, B5 and T5 against L5/R5 states and back, B6 on L5's state touching only its own sites, T6 on L5's or R5's state writing nothing) (every step: apply, again, put back, NTSC and PAL, a mixed-variant camera, lost writes,
   foreign bytes, null pointers, a missing mode id, guards, L5 and R5 against each other's state, the C routine's order and a short mapping,
   the S-I step with and without L19; and the FX30, FX3, FX2, A7C II, A7 IV and A7S III kits' libraries of the same steps write nothing on an
-  A1 II). `emu_a1m2.py` 24 cases + 5 foreign kits (stock NTSC/PAL, applied, no screen, no meta, real rows; the A1, FX30, FX2 and A7 IV say
-  NOT READY). `a1m2_run.py <step> --selftest` for all 21 libraries (check and dump with the emulated helper, including the dump decoder);
-  `a1m2_apply.py --dry-run` for every launcher, from the published tree; the app harness (19 checks on the APK's payload: Test 0 to Test 4, the put-backs, the full apply refused).
-- Android: `android/A1II-OpenGate.apk` 0.3 (com.a1m2.opengate; Test 0 to Test 4 and Put back Test 0 buttons), SHA-256 17d93d4870377e5dd4cc855726423faa418bcb2cf9b03e659f3bb8c81e4509ba.
-- Every A1 II library rebuilds to its pin against the final shared `helper/readcheck.c` (another session's MP_LD blocks, 2026-11-26 22:40); the published tree carries the final copies of it and `ct6_level1_run.py`.
+  A1 II). `emu_a1m2.py` 28 cases + 5 foreign kits (stock NTSC/PAL, applied, no screen, no meta, real rows, no log names on the command
+  line, log areas without their header; the A1, FX30, FX2 and A7 IV say NOT READY; every dump case also checks the log part: the 256 KB
+  kernel log and both camera-core areas copied exactly, six read-only mappings inside the two logs, all unmapped).
+  `a1m2_run.py <step> --selftest` for all 23 libraries, from the published tree (check and dump with the emulated helper, including the
+  dump decoder and the log cut); `a1m2_apply.py --dry-run` for every launcher, from the published tree; the app harness (21 checks on the
+  APK's payload: Test 5, Test 0 to Test 4, the put-backs, the full apply refused).
+- Android: `android/A1II-OpenGate.apk` 0.4 (com.a1m2.opengate; Test 5 and Put back Test 5 first, then Test 0 to Test 4), SHA-256 5066cc044677d89268616094d36a4a9c728a2fb8d7fa06d975dcb33784a07c67.
+- Every earlier A1 II library rebuilds to its pin against the current shared `helper/readcheck.c` (kit v3, 2026-11-27); the published tree carries the current copies of it and `ct6_level1_run.py`.
 
 ## First camera run (kit v1, 2026-11-26) and kit v2
 
@@ -141,6 +145,32 @@ fail like the first run: `a1m2_apply.py apply` refuses and points to the tests, 
 `build/build_ram_words_a1m2.py --fehold`), and the read-only helper `a1m2read_v2`, whose dump adds the view page 0x1623000 and the margin
 page 0x1951000 and reports the view's crop, first-scaler size and output, whether it AGREES with what the picture records deliver, the
 margin words, and the F16 word.
+
+## Run 2 (kit v2 test 0, 2026-11-26) and kit v3
+
+**Run 2:** test 0 (B5, `fhband_a1m2_v1`: the sensor's window cells and read-out at full height, everything else stock) applied, no restart.
+The picture filled the view with fine horizontal stripes about every 30 rows and a magenta cast: the sensor honours the full-height window
+and starts its read-out at another row; its fixed-row corrections stay stock and land on the wrong rows (expected in test 0 and test 5).
+Test 0 cannot show whether rows BELOW the stock band's end arrive. The kit v2 dump's resize-view decode printed sizes that are not a view
+(crop 22308x353, output 2592x500, mode 0x11ef414): the dump ran in stills, where those words are something else.
+
+**Kit v3:**
+- **test5 = T5/T6 `ogbb_a1m2_v1`** (`build/build_og_a1m2.py --bottom-band`): the full design's sensor cells and tables (as L5) and four
+  picture records with the stock-size 2,446-row stage taken from active row 450 (first scaler 1:1; fields A L58/R59, B L62/R63), four stored
+  records NTSC/PAL (27 bytes, +4..+7 stock). Full height delivered -> a normal 16:9 picture framed ~9% LOWER than stock, no restart; only
+  ~2,462 lines -> a purple/black band at the bottom (~18%) and the restart. The FIRST and only test to run now; the full open gate with C3
+  waits for its answer. T5 and L5/R5/B5 refuse each other's states (nothing written); T6 on L5's or R5's state writes nothing.
+- **Dump v3** (`a1m2read_v3`): the main processor's kernel log buffer (klog.addr 0x400040000, klog.size 0x40000, only if the command line
+  names them; as the A7 IV helper's level 9) and two areas of the camera core's print log: the core's prints (0xbd9e8c -> 0xbd8212, IPC
+  subsystem 3) are stored by osal_ulogio.ko where /setting/ulogio.bin puts them: LOGB 0x5000000 + 0x778000, BASE tag 4 -> physical
+  0x405000000 (`memrsv=0x01000000@0x405000000`, required); subsystem 3 at 0x40510ffc4 (total 0xb6738, 11 areas); area 1 = the ring of the
+  latest lines (0x405150054, 0x2024), area 3 = the first lines after start-up (0x40517209c, 0xa044); each area's 0x24-byte header ("RBUF",
+  data address, data size = size - 0x24, ..., write pointer +20) is printed and the data copied raw. `a1m2_run.py` cuts the raw blocks out by
+  their byte counts (klog.bin, camlog_first.bin, camlog_last.bin in the session folder) and prints the CamCore / AIF / S-Ele / memsize lines
+  first in the report. Whether these logs survive the camera's self-restart is not known; a battery pull clears them. The check build has
+  no log part. `put()` is kept out of line so the dump build stays in one upload packet (55,008 bytes; the check build 49,544).
+- **View decode:** the resize view is judged only when its words are those of a 4K movie mode (drive mode 0x820/0x2820/0x8c0/0x28c0, crop
+  4,320 or 4,332 wide and 2,000 to 3,000 high, output 3840x2160 or 3840x2560); otherwise the report says "view not in the 4K movie state".
 
 ## Not known until an A1 II runs it
 

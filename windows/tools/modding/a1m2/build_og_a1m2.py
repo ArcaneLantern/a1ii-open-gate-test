@@ -56,7 +56,10 @@ import emu_record_selector as S  # noqa: E402
 B, SIZE = 0x108000, F.SIZE
 BUILD = "a1m2_400"
 REAL = "--real-rows" in sys.argv                     # variant: the first scaler keeps every row (the A7 IV's ogh2560_v1 form)
-NAME = "ogh2880_a1m2_v1" if REAL else "ogsq_a1m2_v1"
+BOTTOM = "--bottom-band" in sys.argv                  # diagnostic (the A7 IV's fhs3958b, F664/F665): full-height sensor frame and tables,
+                                                      # stock-size first stage taken from the BOTTOM of the frame, everything after stock
+NAME = "ogbb_a1m2_v1" if BOTTOM else "ogh2880_a1m2_v1" if REAL else "ogsq_a1m2_v1"
+BOTTOM_ROWS = 450                                     # the stage starts 450 active rows down the 2,880-row frame (2880 - 2430)
 X = locate_file.locate(BUILD, "cpapp-b.bin").read_bytes()
 A = locate_file.locate("a7iv_602", "cpapp-b.bin").read_bytes()
 SHA = hashlib.sha256(X).hexdigest()
@@ -74,7 +77,7 @@ FAMILY = {"A": ({"L": 0xDF6844, "R": 0xDF73FC}, 0x8C0), "crop": ({"L": 0xDF50D4,
 OTHER = {"full-res S35": ({"L": 0xDF7FB4, "R": 0xDF8B6C}, 0x821), "3x3": ({"L": 0xDFF4E4, "R": 0xE0009C}, 0xB20)}
 MATRIX_EDITS = {0x20: (6, 1), 0x24: (0x19, 0x1E), 0x90: (0x3A, 0x3F)}     # shadow offset: (stock, full height)
 NEW_H = 2880
-PAV = (2, 1) if REAL else (27, 16)                     # stored record +6/+7 over +4/+5 = 2/1: 27/32 (real rows: stock 2/1)
+PAV = (2, 1) if (REAL or BOTTOM) else (27, 16)                     # stored record +6/+7 over +4/+5 = 2/1: 27/32 (real rows: stock 2/1)
 STOCK_OUT = (4320, 2430)
 OUT = (4320, 2880) if REAL else STOCK_OUT              # the first scaler's picture (the front end)
 
@@ -348,6 +351,10 @@ def main():
     g_new = (NEW_H + 16, sfacts["p"], gm["A"][2], 0, NEW_H, gm["A"][5])
     frame, crop = frame_crop(0x8C0, NEW_H)
     assert frame == (4332, NEW_H + 16) and crop == (6, 8, 4320, NEW_H)
+    if BOTTOM:              # stage rows, active rows stock; window row, first active row and band row move down by BOTTOM_ROWS; the frame-level
+        #                   phase-detect rows are the full frame's (the sensor sends the whole height)
+        g_new = (gm["A"][0], sfacts["p"], gm["A"][2] + BOTTOM_ROWS, BOTTOM_ROWS, gm["A"][4], gm["A"][5] + BOTTOM_ROWS)
+        frame, crop = frame_crop(0x8C0)
     recs, lrc, nfields, post_lrc = {}, {}, {}, {}
     for p, at in PAIRS.items():
         base = pair(at)
@@ -360,7 +367,7 @@ def main():
         for h in "LR":
             k = LINT.lrc(rec[h])
             lrc[p][h] = {"input": list(k["in"]), "output": list(k["out"]), "step_q12": list(k["step"]), "start": list(k["start"])}
-            assert k["in"][1] == NEW_H + 16 and u16(rec[h], 0x95E) == 0
+            assert k["in"][1] == (2446 if BOTTOM else NEW_H + 16) and u16(rec[h], 0x95E) == (BOTTOM_ROWS if BOTTOM else 0)
             moved = [hex(o) for o in range(0x174, 0x1D8, 2) if rec[h][o:o + 2] != base[h][o:o + 2]]
             post_lrc.setdefault(p, {})[h] = {"row_pad": [u16(base[h], 0x186), u16(rec[h], 0x186)], "fields": moved}
             if not REAL:            # only the Lrc output's row padding may move (the movie row rule: padded rows = rows + 2 x the fit's pad)

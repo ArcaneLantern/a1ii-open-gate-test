@@ -282,7 +282,7 @@ static const unsigned char B276[] = {6,14,129,82};
 static const unsigned char B277[] = {6,64,129,82};
 static const unsigned char B278[] = {6,14,129,82};
 static const unsigned char B279[] = {6,64,129,82};
-#define A1M2_LABEL "a1m2read_v2"
+#define A1M2_LABEL "a1m2read_v3"
 #define CP_LO 0xc0000U
 #define CP_HI 0x2700000U
 #define AVCAM_PHYS 0x401000000UL

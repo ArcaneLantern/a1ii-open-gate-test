@@ -8,6 +8,8 @@ appFw.so, levels 19/20 with MP_LIB "appFw.so"). The A1 II's designs (modding/A1M
   expected_sites_ogsq_a1m2_v1.h              levels 5/6 (L5/L6): 13 table/record sites and the four stored records (0x820, 0x2820, 0x8c0, 0x28c0)
   expected_sites_ogh2880_a1m2_v1.h           levels 5/6 (R5/R6): the real-rows alternative, the same sites with other record bytes
   expected_sites_fhband_a1m2_v1.h            levels 5/6 (B5/B6, kit v2 test0): the sensor window at full height only (read-out span, 3 matrix cells, 4 stored records)
+  expected_sites_ogbb_a1m2_v1.h              levels 5/6 (T5/T6, kit v3 test5): the full design's sensor side with the stock-size 2,446-row stage taken from
+                                             active row 450 (the bottom band): the same 13 sites and four stored records as L5, other record bytes
   expected_words_outsz2560_a1m2_v1.h         levels 16/17 (L16/L17): the output-size word and its guards
   expected_words_lcdfill_a1m2_v1.h           levels 16/17 (S16/S17): the rear screen filled (fit word) and the three frame rectangles
   expected_words_fehold_a1m2_v1.h            levels 16/17 (F16/F17, kit v2): one code word, the resize set-up keeps the records' first-scaler size
@@ -268,7 +270,7 @@ def mp_appfw_header(name="lcdcycle_a1m2_v1"):
 
 
 if __name__ == "__main__":
-    for n in ("ogsq_a1m2_v1", "ogh2880_a1m2_v1", "fhband_a1m2_v1"):
+    for n in ("ogsq_a1m2_v1", "ogh2880_a1m2_v1", "fhband_a1m2_v1", "ogbb_a1m2_v1"):
         print("sites header %s:" % n, sites_header(n))
     for n in ("outsz2560_a1m2_v1", "lcdfill_a1m2_v1", "fehold_a1m2_v1"):
         print("words header %s:" % n, words_header(n))

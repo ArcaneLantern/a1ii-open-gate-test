@@ -1,9 +1,9 @@
 """A1 II (ILCE-1M2) firmware 4.00: apply, or put back, the open-gate state in the camera's MEMORY.
 
   python a1m2_apply.py apply    [--no-screen] [--no-meta] [--no-si] [--real-rows] [--dry-run]
-  python a1m2_apply.py test0 | test1 | test2 | test3 | test4  [--dry-run]     (kit v2: the bisection after the first A1 II run)
-  python a1m2_apply.py putback-test0  [--dry-run]                         (B6: put back test0 only)
-  (kit v2: `apply` refuses and points to the tests; test3 / test4 are the full state)
+  python a1m2_apply.py test5 | test0 | test1 | test2 | test3 | test4  [--dry-run]     (kit v2/v3: the bisection after the first A1 II run)
+  python a1m2_apply.py putback-test5 | putback-test0  [--dry-run]                  (T6 / B6: put back test5 or test0 only)
+  (kits v2 and v3: `apply` refuses and points to the tests; test3 / test4 are the full state)
   python a1m2_apply.py putback  [--no-screen] [--no-si] [--real-rows] [--dry-run]
   python a1m2_apply.py screen | screen-putback  [--dry-run]
   (apply and screen take --no-movie-session to leave out the closing read-only session)
@@ -26,6 +26,10 @@ shown at 3:2 on the rear screen, with the C3 button cycling an anamorphic previe
   KIT v2 (2026-11-26), after the first A1 II run (every step applied; the live view showed the picture moved up with a purple/black band at
   the bottom; ~15 s later or at record start the camera restarted with the forced 'S-Ele Refresh ng' exception: the stage after the first
   scaler never finished). The cause is not known yet: the targets below take the state apart, from the sensor step alone upwards.
+    test5  (kit v3, the FIRST test) T5 only (ogbb_a1m2_v1): the full design's sensor side (window at full height, read-out, matrix cells)
+           with the four picture records taking the stock-size 2,446-row stage from active row 450, i.e. from the bottom of the frame:
+           a normal 16:9 picture framed ~9% LOWER than stock if the sensor delivers its full height; a purple/black band at the bottom
+           (~18%) and a restart if only ~2,462 lines arrive -> then the closing dump
     test0  B5 only: the sensor's window registers at full height and the read-out length, every other table and the picture records stock
            (fhband_a1m2_v1): the framing moves UP by ~9% if the sensor reads beyond its band, stays as stock if not -> then the closing dump
     test1  L5 only (the squeezed full-height sensor step, nothing else)                  -> then the closing dump
@@ -72,14 +76,16 @@ FIRMWARE = a1m2_run.FIRMWARE
 STEPS = {"apply": ("L5", "F16", "L16", "L19", "I19"), "putback": ("I20", "L20", "L17", "F17", "L6"), "screen": ("S16", "C19"), "screen-putback": ("C20", "S17"),
          # kit v2: the bisection (README.md): the sensor step alone, the real-rows sensor step alone, the default state, the real-rows state
          "test1": ("L5",), "test2": ("R5",), "test3": ("L5", "F16", "L16", "L19", "I19"), "test4": ("R5", "L16", "L19", "I19"),
-         "test0": ("B5",), "putback-test0": ("B6",)}
+         "test0": ("B5",), "putback-test0": ("B6",),
+         # kit v3: test5 = the bottom band (T5): does the sensor deliver rows below the stock band's end?
+         "test5": ("T5",), "putback-test5": ("T6",)}
 # kit v2: the full apply is not offered. The first run's restart is not explained (the resize override, which F16 holds, is ruled out in
 # emulation), so the full state (test3) is expected to fail the same way until test0 and test1 are reported.
-APPLY_REFUSED = ("Kit v2 does not run the full apply: the first A1 II run restarted the camera and the cause is not known yet (the resize-size\n"
-                 "override that F16 holds turned out not to be the cause in emulation), so the full state is expected to fail the same way.\n"
-                 "Run the tests instead, each from a cold boot, SteadyShot OFF, and report after each (README.md):\n"
-                 "  test0_sensor_band (first), test1_sensor_only, test2_real_rows_only; test3_squeeze_hold / test4_real_rows are the full state.\n"
-                 "Nothing was sent.")
+APPLY_REFUSED = ("This kit (v3) does not run the full apply: the first A1 II run restarted the camera and the cause is not known yet (the\n"
+                 "resize-size override that F16 holds is not the cause in emulation; test0 showed the sensor's read-out start moves), so the\n"
+                 "full state is expected to fail the same way until test5 is reported.\n"
+                 "Run test5_bottom_band first, from a cold boot, SteadyShot OFF, and report (README.md). The full open gate with C3 waits for\n"
+                 "test5's answer. Nothing was sent.")
 WHOLE = ("apply", "putback", "test3", "test4")
 RUNNER = HERE / "a1m2_run.py"
 LISTER = HERE.parent / "CT1_usb_first_contact" / "ct1_stage2_service.py"
@@ -112,7 +118,7 @@ def last_check():
         res = man.get("results", {})
         f = (res.get("ct6", {}).get("result") or {}).get("s3")
         if res.get("which") in ("check", "dump") and f:       # a dump makes every check the check makes, and gives the same verdict
-            current = "a1m2read_v2 " in f.get("header", "") and "ILCE-1M2 4.00" in f.get("header", "")      # kit v2's helper only
+            current = "a1m2read_v3 " in f.get("header", "") and "ILCE-1M2 4.00" in f.get("header", "")      # kit v3's helper only
             return folder.name, current and bool(f.get("ready")) and not f.get("identity_differs")
     return None
 
@@ -250,7 +256,7 @@ def main():
     if a.no_meta and a.what not in ("apply", "test3", "test4"):
         raise SystemExit("--no-meta goes with apply (the put back L20 puts back either encoder step). Nothing was sent.")
     steps = plan(a)
-    applying = a.what in ("apply", "screen", "test0", "test1", "test2", "test3", "test4")
+    applying = a.what in ("apply", "screen", "test0", "test1", "test2", "test3", "test4", "test5")
     for k in steps:                                  # every library must be the pinned one before anything starts
         name, sha, _ = a1m2_run.WRITE_STEPS[k]
         p = a1m2_run.S3 / name
@@ -285,7 +291,7 @@ def main():
         say("It has to follow an apply of this kit (with the same --no-si / --real-rows choices).")
     say("A cold boot (battery out for 10 seconds) returns the camera to stock. Whether the power switch alone does on the A1 II is not known:")
     say("so KEEP THE CAMERA SWITCHED ON from now until the script says it is finished.")
-    if a.what in ("apply", "test0", "test1", "test2", "test3", "test4"):
+    if a.what in ("apply", "test0", "test1", "test2", "test3", "test4", "test5"):
         say("SteadyShot: set it to OFF for every test (and say so in your report if you also try Active).")
         say("Before you go on: %s, a charged battery," % STILL)
         say("and a camera that was cold booted and has not been in Movie or S&Q since. (If it starts in Movie: set the switch to Still,")
@@ -323,6 +329,17 @@ def main():
         say("  MOVED: clearly MORE is visible above (about 9% of the picture height) and less below -> the sensor reads its full height.")
         say("  SAME: exactly the stock framing -> the sensor does not read beyond its 16:9 band in this setting.")
         say("  Also report any restart, purple or black band. To put test0 back: test0_putback, or a cold boot.")
+    if a.what == "test5":
+        say("test5: the full-height sensor step, with the stock-size picture taken from the BOTTOM of the frame (everything else stock).")
+        say("  Set MOVIE (XAVC HS 4K 24p or 25p, SteadyShot OFF) and compare with the stock view of the same scene (tripod), looking at the")
+        say("  BOTTOM edge of the picture:")
+        say("  A) a normal 16:9 picture framed about 9% LOWER than stock (more visible below, less above), no band, no restart")
+        say("     -> the sensor delivers its full height: the open gate can work on the A1 II.")
+        say("  B) a purple or black band at the bottom (about 18% of the height) and/or a restart")
+        say("     -> only about 2,462 lines arrive from the sensor.")
+        say("  Report A or B (a photo of the screen helps) and whether a 10-second recording works. Stripes or a colour cast in the extra")
+        say("  rows are possible (the sensor's fixed-row corrections are stock); report them, they are not the question here.")
+        say("  To put test5 back: test5_putback, or a cold boot (battery out for 10 seconds).")
     if a.what in ("test1", "test2"):
         say("%s: only the sensor step is applied. In Movie (XAVC HS 4K 24p or 25p), with SteadyShot OFF, look at the rear screen:" % a.what)
         if a.what == "test1":
